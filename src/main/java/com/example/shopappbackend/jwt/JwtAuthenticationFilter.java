@@ -80,6 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Pair.of(String.format("/%s/product-images", apiPrefix), "GET"),
                 Pair.of(String.format("/%s/orders", apiPrefix), "GET"),
                 Pair.of(String.format("/%s/users/register", apiPrefix), "POST"),
+                Pair.of(String.format("/%s/users/details", apiPrefix), "GET"),
                 Pair.of(String.format("/%s/users/login", apiPrefix), "POST")
         );
         for (Pair<String, String> bypassToken : bypassTokens) {

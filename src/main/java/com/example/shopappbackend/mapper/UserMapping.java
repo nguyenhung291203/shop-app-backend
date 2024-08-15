@@ -13,6 +13,7 @@ public class UserMapping {
                 .googleAccountId(userRegisterDTO.getGoogleAccountId())
                 .phoneNumber(userRegisterDTO.getPhoneNumber())
                 .password(userRegisterDTO.getPassword())
+                .address(userRegisterDTO.getAddress())
                 .isActive(true)
                 .build();
     }
@@ -26,6 +27,7 @@ public class UserMapping {
                 .googleAccountId(user.getGoogleAccountId())
                 .isActive(user.isActive())
                 .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
                 .build();
     }
 }

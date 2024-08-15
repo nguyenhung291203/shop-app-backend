@@ -25,4 +25,5 @@ public class UserResponse {
     private Long googleAccountId;
     @JsonProperty("role_id")
     private Long roleId;
+    private String address;
 }

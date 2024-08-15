@@ -44,7 +44,7 @@ public class SpringSecurityConfig implements WebMvcConfigurer {
                 .authorizeHttpRequests(request -> {
                     request.requestMatchers(HttpMethod.POST, String.format("%s/users/login", apiPrefix)).permitAll();
                     request.requestMatchers(HttpMethod.POST, String.format("%s/users/register", apiPrefix)).permitAll();
-                    request.requestMatchers(HttpMethod.GET, String.format("%s/users/**", apiPrefix)).hasAnyRole(Role.ADMIN);
+                    request.requestMatchers(HttpMethod.GET, String.format("%s/users/details", apiPrefix)).permitAll();
                     request.requestMatchers(HttpMethod.PUT, String.format("%s/users/**", apiPrefix)).hasAnyRole(Role.ADMIN, Role.USER);
                     request.requestMatchers(HttpMethod.DELETE, String.format("%s/users/**", apiPrefix)).hasAnyRole(Role.ADMIN);
                     request.requestMatchers(HttpMethod.GET, String.format("%s/categories/**", apiPrefix)).permitAll();
@@ -57,7 +57,7 @@ public class SpringSecurityConfig implements WebMvcConfigurer {
                     request.requestMatchers(HttpMethod.DELETE, String.format("%s/products/**", apiPrefix)).hasAnyRole(Role.ADMIN);
                     request.requestMatchers(HttpMethod.GET, String.format("%s/product-images/**", apiPrefix)).permitAll();
                     request.requestMatchers(HttpMethod.GET, String.format("%s/orders/**", apiPrefix)).permitAll();
-                    request.requestMatchers(HttpMethod.POST, String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.ADMIN, Role.USER);
+                    request.requestMatchers(HttpMethod.POST, String.format("%s/orders/**", apiPrefix)).permitAll();
                     request.requestMatchers(HttpMethod.PUT, String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.ADMIN, Role.USER);
                     request.requestMatchers(HttpMethod.DELETE, String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.ADMIN, Role.USER);
                     request.requestMatchers(HttpMethod.GET, String.format("%s/order_details/**", apiPrefix)).hasAnyRole(Role.ADMIN, Role.USER);
@@ -73,7 +73,7 @@ public class SpringSecurityConfig implements WebMvcConfigurer {
                 CorsConfiguration configuration = new CorsConfiguration();
                 configuration.setAllowedOrigins(List.of("*"));
                 configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
-                configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token","cache-control"));
+                configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token", "cache-control"));
                 configuration.setExposedHeaders(List.of("x-auth-token"));
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/**", configuration);

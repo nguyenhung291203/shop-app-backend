@@ -83,6 +83,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getUserDetail(String token) {
+        if (jwtTokenProvider.isExpired(token))
+            throw new BadRequestException("Phiên đăng nhập đã hết hạn");
         String phoneNumber = jwtTokenProvider.getUsername(token);
         User user = this.userRepository.findUserByPhoneNumber(phoneNumber);
         if (!user.isActive())

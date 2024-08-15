@@ -13,7 +13,7 @@ import lombok.*;
 public class UserLoginDTO {
     @JsonProperty("phone_number")
     @NotBlank(message = "Số điện thoại là bắt buộc")
-    @Size(max=10,message = "Số điện thoại phải có 10 kí tự")
+//    @Size(max = 10, message = "Số điện thoại phải có 10 kí tự")
     private String phoneNumber;
     @NotBlank(message = "Mật khẩu là bất buộc")
     private String password;
