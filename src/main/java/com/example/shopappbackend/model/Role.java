@@ -16,6 +16,6 @@ public class Role {
     private Long id;
     @Column(unique = true)
     private String name;
-    public static String USER = "USER";
-    public static String ADMIN = "ADMIN";
+    public static final String USER = "USER";
+    public static final String ADMIN = "ADMIN";
 }

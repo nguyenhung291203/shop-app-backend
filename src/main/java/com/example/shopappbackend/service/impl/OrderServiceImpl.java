@@ -63,7 +63,6 @@ public class OrderServiceImpl implements OrderService {
             orderDetail.setPrice(product.getPrice());
             orderDetail.setTotalMoney(product.getPrice() * cartItemDTO.getQuantity());
             orderDetails.add(orderDetail);
-
         }
         orderRepository.save(order);
         orderDetailRepository.saveAll(orderDetails);

@@ -2,6 +2,7 @@ package com.example.shopappbackend.controller;
 
 import com.example.shopappbackend.dto.UserLoginDTO;
 import com.example.shopappbackend.dto.UserRegisterDTO;
+import com.example.shopappbackend.dto.UserUpdateDTO;
 import com.example.shopappbackend.response.ResponseApi;
 import com.example.shopappbackend.service.UserService;
 import com.example.shopappbackend.utils.LocalizationUtil;
@@ -10,6 +11,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +31,6 @@ public class UserController {
 
     @GetMapping("/details")
     public ResponseEntity<?> getUserDetail(@RequestHeader("Authorization") String jwtToken) {
-        System.out.println(jwtToken);
         String token = jwtToken.substring(7);
         return ResponseEntity.ok(ResponseApi.builder()
                 .data(userService.getUserDetail(token))
@@ -50,6 +52,14 @@ public class UserController {
                 .builder()
                 .data(userService.login(userLoginDTO))
                 .message(localizationUtil.getLocaleResolver(MessageKey.LOGIN_SUCCESSFULLY))
+                .build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable @Valid Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
+        return ResponseEntity.ok(ResponseApi.builder()
+                .data(userService.updateUser(id, userUpdateDTO))
+                .message("Cập nhật thành công")
                 .build());
     }
 }

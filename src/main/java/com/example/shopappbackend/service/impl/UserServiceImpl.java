@@ -2,6 +2,7 @@ package com.example.shopappbackend.service.impl;
 
 import com.example.shopappbackend.dto.UserLoginDTO;
 import com.example.shopappbackend.dto.UserRegisterDTO;
+import com.example.shopappbackend.dto.UserUpdateDTO;
 import com.example.shopappbackend.exception.BadRequestException;
 import com.example.shopappbackend.exception.DataIntegrityViolationException;
 import com.example.shopappbackend.exception.NotFoundException;
@@ -93,5 +94,35 @@ public class UserServiceImpl implements UserService {
         if (user == null)
             throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.LOGIN_FAILURE));
         return UserMapping.mapUserToUserResponse(user);
+    }
+
+    @Override
+    public UserResponse updateUser(Long id, UserUpdateDTO userUpdateDTO) {
+        User user = this.userRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy tài khoản"));
+        if (userUpdateDTO.getPassword() != null && userUpdateDTO.getRetypePassword() != null) {
+            if (!userUpdateDTO.getPassword().equals(userUpdateDTO.getRetypePassword()))
+                throw new BadRequestException("Mật khẩu không chính xác");
+            user.setPassword(passwordEncoder.encode(userUpdateDTO.getPassword()));
+        }
+        if (userUpdateDTO.getRoleId() != null) {
+            Role role = roleRepository.findById(userUpdateDTO
+                    .getRoleId()).orElseThrow(
+                    () -> new NotFoundException("Quyền truy cập không tồn tại"));
+            user.setRole(role);
+        }
+
+        User userFindByPhoneNumber = this.userRepository.findUserByPhoneNumber(userUpdateDTO.getPhoneNumber());
+
+        if (!userFindByPhoneNumber.equals(user) && userFindByPhoneNumber != null)
+            throw new BadRequestException("Số điện thoại đã được sử dụng");
+
+        user.setDateOfBirth(userUpdateDTO.getDateOfBirth());
+
+        user.setFullName(userUpdateDTO.getFullName());
+
+        user.setActive(userUpdateDTO.isActive());
+        user.setAddress(userUpdateDTO.getAddress());
+
+        return UserMapping.mapUserToUserResponse(userRepository.save(user));
     }
 }
