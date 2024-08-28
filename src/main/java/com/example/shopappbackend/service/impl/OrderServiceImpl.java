@@ -3,6 +3,7 @@ package com.example.shopappbackend.service.impl;
 
 import com.example.shopappbackend.dto.CartItemDTO;
 import com.example.shopappbackend.dto.OrderDTO;
+import com.example.shopappbackend.exception.BadRequestException;
 import com.example.shopappbackend.exception.NotFoundException;
 import com.example.shopappbackend.model.*;
 import com.example.shopappbackend.repository.OrderDetailRepository;
@@ -11,11 +12,14 @@ import com.example.shopappbackend.repository.ProductRepository;
 import com.example.shopappbackend.repository.UserRepository;
 import com.example.shopappbackend.response.OrderDetailResponse;
 import com.example.shopappbackend.response.OrderResponse;
+import com.example.shopappbackend.response.PageResponse;
 import com.example.shopappbackend.service.OrderService;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -51,6 +55,7 @@ public class OrderServiceImpl implements OrderService {
         order.setShippingDate(shippingDate);
         order.setActive(true);
         List<OrderDetail> orderDetails = new ArrayList<>();
+        List<Product> products = new ArrayList<>();
         for (CartItemDTO cartItemDTO : orderDTO.getCartItems()) {
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
@@ -58,13 +63,19 @@ public class OrderServiceImpl implements OrderService {
                     .findById(cartItemDTO.getProductId())
                     .orElseThrow(() ->
                             new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " product id: " + cartItemDTO.getProductId())));
+            if (product.getQuantity() < cartItemDTO.getQuantity())
+                throw new BadRequestException("Số lượng sản phẩm trong kho không đủ");
+            product.setQuantity(product.getQuantity() - cartItemDTO.getQuantity());
+            product.setSold(product.getSold() + cartItemDTO.getQuantity());
             orderDetail.setProduct(product);
             orderDetail.setNumberOfProducts(cartItemDTO.getQuantity());
             orderDetail.setPrice(product.getPrice());
             orderDetail.setTotalMoney(product.getPrice() * cartItemDTO.getQuantity());
             orderDetails.add(orderDetail);
+            products.add(product);
         }
         orderRepository.save(order);
+        productRepository.saveAll(products);
         orderDetailRepository.saveAll(orderDetails);
         return modelMapper.map(order, OrderResponse.class);
     }
@@ -129,5 +140,25 @@ public class OrderServiceImpl implements OrderService {
                     orderResponse.setOrderDetailResponses(orderDetailResponses);
                     return orderResponse;
                 }).toList();
+    }
+
+    @Override
+    public PageResponse<OrderResponse> findByKeyword(String keyword, Pageable pageable) {
+        Page<Order> orders = orderRepository.findByKeyword(keyword, pageable);
+        List<OrderResponse> orderResponseList = orders
+                .stream().map(order -> {
+                    OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
+                    List<OrderDetailResponse> orderDetailResponses = order.getOrderDetails()
+                            .stream().map(orderDetail ->
+                                    modelMapper.map(orderDetail, OrderDetailResponse.class)).toList();
+                    orderResponse.setOrderDetailResponses(orderDetailResponses);
+                    return orderResponse;
+                }).toList();
+        return PageResponse.<OrderResponse>builder()
+                .contents(orderResponseList)
+                .numberOfElements(orders.getNumberOfElements())
+                .totalPages(orders.getTotalPages())
+                .totalElements(orders.getTotalElements())
+                .build();
     }
 }

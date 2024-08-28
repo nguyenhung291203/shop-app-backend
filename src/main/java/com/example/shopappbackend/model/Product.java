@@ -19,6 +19,9 @@ public class Product extends BaseEntity {
     private String name;
     private String thumbnail;
     private String description;
+    private int quantity;
+    private float rating;
+    private int sold;
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;

@@ -11,8 +11,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +24,12 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<?> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+        return ResponseEntity.ok(ResponseApi.builder()
+                .data(userService.getAllUsers())
+                .message("Get success")
+                .build());
     }
+
 
     @GetMapping("/details")
     public ResponseEntity<?> getUserDetail(@RequestHeader("Authorization") String jwtToken) {

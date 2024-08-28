@@ -11,7 +11,10 @@ public class ProductMapping {
                 .thumbnail(product.getThumbnail())
                 .price(product.getPrice())
                 .name(product.getName())
+                .quantity(product.getQuantity())
+                .rating(product.getRating())
                 .id(product.getId())
+                .sold(product.getSold())
                 .build();
         productResponse.setCreatedDate(product.getCreatedDate());
         productResponse.setUpdatedDate(product.getUpdatedDate());

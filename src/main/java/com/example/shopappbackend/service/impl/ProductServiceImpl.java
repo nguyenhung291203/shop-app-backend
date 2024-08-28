@@ -41,8 +41,6 @@ public class ProductServiceImpl implements ProductService {
         List<ProductResponse> productResponses = productPage.getContent().stream()
                 .map(ProductMapping::mapProductToProductResponse)
                 .collect(Collectors.toList());
-//        if (productResponses.isEmpty())
-//            throw new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND));
 
         return PageResponse.<ProductResponse>builder()
                 .contents(productResponses)
@@ -132,6 +130,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public void generateFakeProducts() {
         Faker faker = new Faker();
         for (int i = 0; i < 500; i++) {

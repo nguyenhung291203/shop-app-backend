@@ -11,7 +11,7 @@ import java.util.List;
 public interface UserService {
     User register(UserRegisterDTO userRegisterDTO);
     String login(UserLoginDTO userLoginDTO);
-    List<User> getAllUsers();
+    List<UserResponse> getAllUsers();
     UserResponse getUserDetail(String token);
     UserResponse updateUser(Long id, UserUpdateDTO userUpdateDTO);
 }

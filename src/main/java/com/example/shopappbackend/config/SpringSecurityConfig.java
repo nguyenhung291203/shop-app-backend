@@ -12,8 +12,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -47,6 +45,7 @@ public class SpringSecurityConfig implements WebMvcConfigurer {
                         .requestMatchers(HttpMethod.GET, String.format("%s/users/details/**", apiPrefix)).hasAnyRole(Role.USER, Role.ADMIN)
                         .requestMatchers(HttpMethod.PUT, String.format("%s/users", apiPrefix)).hasAnyRole(Role.USER, Role.ADMIN)
                         .requestMatchers(HttpMethod.DELETE, String.format("%s/users/**", apiPrefix)).hasAnyRole(Role.ADMIN)
+                        .requestMatchers(HttpMethod.GET, String.format("%s/users/**", apiPrefix)).hasAnyRole(Role.ADMIN)
                         .requestMatchers(HttpMethod.GET, String.format("%s/categories/**", apiPrefix)).permitAll()
                         .requestMatchers(HttpMethod.POST, String.format("%s/categories/**", apiPrefix)).hasAnyRole(Role.ADMIN)
                         .requestMatchers(HttpMethod.PUT, String.format("%s/categories/**", apiPrefix)).hasAnyRole(Role.ADMIN)
@@ -56,7 +55,7 @@ public class SpringSecurityConfig implements WebMvcConfigurer {
                         .requestMatchers(HttpMethod.PUT, String.format("%s/products/**", apiPrefix)).hasAnyRole(Role.ADMIN)
                         .requestMatchers(HttpMethod.DELETE, String.format("%s/products/**", apiPrefix)).hasAnyRole(Role.ADMIN)
                         .requestMatchers(HttpMethod.GET, String.format("%s/product-images/**", apiPrefix)).permitAll()
-                        .requestMatchers(HttpMethod.GET, String.format("%s/orders/**", apiPrefix)).permitAll()
+                        .requestMatchers(HttpMethod.GET, String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.ADMIN, Role.USER)
                         .requestMatchers(HttpMethod.POST, String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.ADMIN, Role.USER)
                         .requestMatchers(HttpMethod.PUT, String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.ADMIN, Role.USER)
                         .requestMatchers(HttpMethod.DELETE, String.format("%s/orders/**", apiPrefix)).hasAnyRole(Role.ADMIN, Role.USER)
