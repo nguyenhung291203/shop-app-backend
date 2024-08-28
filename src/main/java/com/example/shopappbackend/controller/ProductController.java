@@ -12,6 +12,8 @@ import com.example.shopappbackend.utils.MessageKey;
 import com.example.shopappbackend.utils.ParamUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -37,11 +39,13 @@ public class ProductController {
     private final ProductService productService;
     private final FileServiceUtil fileServiceUtil;
     private final LocalizationUtil localizationUtil;
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     @GetMapping("")
     public ResponseEntity<?> getAllProducts(@RequestParam Map<String, Object> params) {
         String search = ParamUtil.getSearchParam(params);
         Pageable pageable = ParamUtil.getPageable(params);
+        logger.info(String.format("search = %s, ",search));
         return ResponseEntity.ok(ResponseApi.builder().data(productService.getAllProducts(search, pageable)).message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_GET_SUCCESSFULLY)).build());
     }
 

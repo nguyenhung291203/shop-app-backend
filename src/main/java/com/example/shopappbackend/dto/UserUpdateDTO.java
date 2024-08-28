@@ -25,7 +25,6 @@ public class UserUpdateDTO {
     @Size(max = 10, message = "Số điện thoại chỉ có tối đa 10 kí tự")
     private String phoneNumber;
     private String address;
-    @Size(min = 6, message = "Mật khẩu phải có ít nhất 6 phần tử")
     private String password;
     @JsonProperty("retype_password")
     private String retypePassword;
