@@ -8,7 +8,8 @@ import java.util.Map;
 
 public class ParamUtil {
     public static String getSearchParam(Map<String, Object> params) {
-        return (String) params.getOrDefault("search", "");
+        String keyword = (String) params.getOrDefault("search", "");
+        return keyword.trim();
     }
 
     public static Pageable getPageable(Map<String, Object> params) {

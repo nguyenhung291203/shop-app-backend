@@ -9,9 +9,13 @@ import com.example.shopappbackend.repository.CategoryRepository;
 import com.example.shopappbackend.service.CategoryService;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
 @Service
@@ -19,6 +23,8 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final LocalizationUtil localizationUtil;
+    private final RedisTemplate redisTemplate;
+    private final Gson gson = new Gson();
 
     @Override
     public Category insertCategory(CategoryDTO category) throws BadRequestException {
@@ -37,10 +43,22 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<Category> getAllCategories() {
-        List<Category> categories = this.categoryRepository.findAll();
-        if (categories.isEmpty())
-            throw new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND));
+        String dataRedis = (String) redisTemplate.opsForValue().get(Category.CategoryRedis);
+        List<Category> categories;
+        if (dataRedis == null) {
+            categories = this.categoryRepository.findAll();
+            if (categories.isEmpty())
+                throw new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND));
+            String data = gson.toJson(categories);
+            redisTemplate.opsForValue().set(Category.CategoryRedis, data);
+        } else {
+            Type listType = new TypeToken<List<Category>>() {
+            }.getType();
+            categories = gson.fromJson(dataRedis, listType);
+        }
         return categories;
+
+
     }
 
     @Override

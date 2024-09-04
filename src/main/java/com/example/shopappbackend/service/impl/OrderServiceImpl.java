@@ -145,6 +145,18 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public PageResponse<OrderResponse> findByKeyword(String keyword, Pageable pageable) {
         Page<Order> orders = orderRepository.findByKeyword(keyword, pageable);
+        return getOrderResponsePageResponse(orders);
+    }
+
+    @Override
+    public PageResponse<OrderResponse> findByUserIdAndKeyword(long userId, String keyword, Pageable pageable) {
+        if (!userRepository.existsById(userId))
+            throw new NotFoundException("Không tìm thấy tài khoản");
+        Page<Order> orders = orderRepository.findByUserIdAndKeyword(userId, keyword, pageable);
+        return getOrderResponsePageResponse(orders);
+    }
+
+    private PageResponse<OrderResponse> getOrderResponsePageResponse(Page<Order> orders) {
         List<OrderResponse> orderResponseList = orders
                 .stream().map(order -> {
                     OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);

@@ -17,15 +17,15 @@ import com.example.shopappbackend.service.ProductService;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
 import com.github.javafaker.Faker;
+import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +35,9 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
     private final LocalizationUtil localizationUtil;
+    private final RedisTemplate redisTemplate;
+    private final Gson gson;
+
     @Override
     public PageResponse<ProductResponse> getAllProducts(String search, Pageable pageable) {
         Page<Product> productPage = productRepository.findByNameContainingIgnoreCase(search, pageable);

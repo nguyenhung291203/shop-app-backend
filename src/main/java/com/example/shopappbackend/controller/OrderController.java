@@ -85,4 +85,13 @@ public class OrderController {
                 .message("Get success")
                 .build(), HttpStatus.OK);
     }
+
+    @GetMapping("/users/{userId}/search")
+    public ResponseEntity<?> findByUserIdAndKeyword(@Valid @PathVariable Long userId, @Valid @RequestParam("keyword") String keyword, @Valid @RequestParam Map<String, Object> params) {
+        Pageable pageable = ParamUtil.getPageable(params);
+        keyword = keyword.trim();
+        return new ResponseEntity<>(ResponseApi.builder()
+                .data(orderService.findByUserIdAndKeyword(userId, keyword, pageable))
+                .build(), HttpStatus.OK);
+    }
 }

@@ -13,7 +13,6 @@ import org.modelmapper.internal.Pair;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -49,7 +48,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
             String token = getTokenFromRequest(request);
-
             if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
                 String username = jwtTokenProvider.getUsername(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -60,13 +58,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            } else {
+                response.setStatus(HttpStatus.FORBIDDEN.value());
+                response.setContentType("application/json");
+                response.setContentType("application/json; charset=UTF-8");  // Đảm bảo sử dụng UTF-8
+                response.setCharacterEncoding("UTF-8");
+                ErrorException<String> errorResponse = new ErrorException<>("Quyền truy cập bị hạn chế vui lòng kiểm tra lại", request.getRequestURI());
+                ObjectMapper mapper = new ObjectMapper();
+                response.getWriter().write(mapper.writeValueAsString(errorResponse));
+                return;
             }
 
         } catch (Exception e) {
             logger.error("Failed to authenticate user", e);
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType("application/json");
-            ErrorException<String> errorResponse = new ErrorException<>("Unauthorized access: Invalid token", request.getRequestURI());
+            ErrorException<String> errorResponse = new ErrorException<>("Quyền truy cập bị hạn chế vui lòng kiểm tra lại", request.getRequestURI());
             ObjectMapper mapper = new ObjectMapper();
             response.getWriter().write(mapper.writeValueAsString(errorResponse));
             return;

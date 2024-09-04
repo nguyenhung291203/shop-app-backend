@@ -43,9 +43,8 @@ public class ProductController {
 
     @GetMapping("")
     public ResponseEntity<?> getAllProducts(@RequestParam Map<String, Object> params) {
-        String search = ParamUtil.getSearchParam(params);
+        String search = ParamUtil.getSearchParam(params).trim();
         Pageable pageable = ParamUtil.getPageable(params);
-        logger.info(String.format("search = %s, ",search));
         return ResponseEntity.ok(ResponseApi.builder().data(productService.getAllProducts(search, pageable)).message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_GET_SUCCESSFULLY)).build());
     }
 

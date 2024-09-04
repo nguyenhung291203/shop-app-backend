@@ -19,4 +19,5 @@ public class ProductResponse extends BaseResponse {
     private float rating;
     private int sold;
     private float price;
+    public final static String ProductResponseRedis = "products";
 }
