@@ -3,6 +3,8 @@ package com.example.shopappbackend.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.List;
+
 @Builder
 @Getter
 @Setter
@@ -19,5 +21,6 @@ public class ProductResponse extends BaseResponse {
     private float rating;
     private int sold;
     private float price;
+    private List<String> images;
     public final static String ProductResponseRedis = "products";
 }

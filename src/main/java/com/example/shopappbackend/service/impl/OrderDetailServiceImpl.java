@@ -30,32 +30,46 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     private final OrderRepository orderRepository;
     private final LocalizationUtil localizationUtil;
 
+    private OrderDetail findOrderDetailById(Long id) {
+        return orderDetailRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(
+                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND,
+                                " orderDetail id: " + id)));
+    }
+
+    private Product findProductById(Long id) {
+        return productRepository.findById(id).orElseThrow(
+                () -> new NotFoundException(localizationUtil
+                        .getLocaleResolver(MessageKey.NOT_FOUND
+                                , id)));
+    }
+
+    private Order findOrderById(Long id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException(localizationUtil
+                                .getLocaleResolver(MessageKey.NOT_FOUND
+                                        , id)));
+    }
+
     @Override
     public List<OrderDetailResponse> getAllOrderDetails() {
         return this.orderDetailRepository.findAll()
-                .stream().map(orderDetail -> modelMapper.map(orderDetail, OrderDetailResponse.class))
+                .stream().map(orderDetail ->
+                        modelMapper.map(orderDetail, OrderDetailResponse.class))
                 .collect(Collectors.toList());
     }
 
     @Override
     public OrderDetailResponse getOrderDetailById(Long id) {
-        OrderDetail orderDetail = orderDetailRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(
-                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " orderDetail id: " + id)));
-
+        OrderDetail orderDetail = this.findOrderDetailById(id);
         return modelMapper.map(orderDetail, OrderDetailResponse.class);
     }
 
     @Override
     public OrderDetailResponse updateOrderDetail(Long id, OrderDetailDTO orderDetailDTO) {
-        OrderDetail orderDetail = orderDetailRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(
-                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " orderDetail id: " + id)));
-        Product product = productRepository.findById(orderDetailDTO
-                .getProductId()).orElseThrow(() ->
-                new NotFoundException(localizationUtil
-                        .getLocaleResolver(MessageKey.NOT_FOUND
-                                , orderDetailDTO.getProductId())));
+        OrderDetail orderDetail = this.findOrderDetailById(id);
+        Product product = this.findProductById(orderDetailDTO.getProductId());
         Order order = orderRepository.findById(orderDetailDTO.getOrderId())
                 .orElseThrow(() ->
                         new NotFoundException(localizationUtil
@@ -74,16 +88,8 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     public OrderDetailResponse insertOrderDetail(OrderDetailDTO orderDetailDTO) {
-        Product product = productRepository.findById(orderDetailDTO
-                .getProductId()).orElseThrow(() ->
-                new NotFoundException(localizationUtil
-                        .getLocaleResolver(MessageKey.NOT_FOUND
-                                , orderDetailDTO.getProductId())));
-        Order order = orderRepository.findById(orderDetailDTO.getOrderId())
-                .orElseThrow(() ->
-                        new NotFoundException(localizationUtil
-                                .getLocaleResolver(MessageKey.NOT_FOUND
-                                        , orderDetailDTO.getOrderId())));
+        Product product = this.findProductById(orderDetailDTO.getProductId());
+        Order order = this.findOrderById(orderDetailDTO.getOrderId());
         OrderDetail orderDetail = OrderDetailMapping.mapOrderDetailDTOToOrderDetail(orderDetailDTO, product, order);
         return modelMapper.map(orderDetailRepository.save(orderDetail), OrderDetailResponse.class);
 
@@ -91,22 +97,16 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     public List<OrderDetailResponse> getOrderDetailByOrderId(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() ->
-                        new NotFoundException(
-                                localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " order id: " + orderId)));
-
-
+        Order order = this.findOrderById(orderId);
         return this.orderDetailRepository.findAllByOrder(order)
-                .stream().map(orderDetail -> modelMapper.map(orderDetail, OrderDetailResponse.class))
+                .stream().map(orderDetail ->
+                        modelMapper.map(orderDetail, OrderDetailResponse.class))
                 .collect(Collectors.toList());
     }
 
     @Override
     public void deleteOrderDetailById(Long id) {
-        OrderDetail orderDetail = orderDetailRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(
-                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " orderDetail id: " + id)));
+        OrderDetail orderDetail = this.findOrderDetailById(id);
         orderDetailRepository.delete(orderDetail);
     }
 }

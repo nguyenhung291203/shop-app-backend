@@ -1,5 +1,7 @@
 package com.example.shopappbackend.model;
 
+import com.example.shopappbackend.model.base.BaseEntity;
+import com.example.shopappbackend.model.listener.ProductListener;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,6 +13,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EntityListeners(ProductListener.class)
 public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

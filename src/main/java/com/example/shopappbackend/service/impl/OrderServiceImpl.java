@@ -36,10 +36,39 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
     private final OrderDetailRepository orderDetailRepository;
 
+    private User findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(localizationUtil
+                        .getLocaleResolver(MessageKey.NOT_FOUND, " user id: " + id)));
+    }
+
+    private Order findOrderById(Long id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(
+                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND,
+                                " order id:" + id)));
+    }
+
+    private Product findProductById(Long id) {
+        return productRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND,
+                                " product id: " + id)));
+    }
+
+    private OrderResponse mapOrderToOrderResponse(Order order) {
+        OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
+        List<OrderDetailResponse> orderDetailResponses = order.getOrderDetails()
+                .stream().map(orderDetail ->
+                        modelMapper.map(orderDetail, OrderDetailResponse.class)).toList();
+        orderResponse.setOrderDetailResponses(orderDetailResponses);
+        return orderResponse;
+    }
+
     @Override
     public OrderResponse insertOrder(OrderDTO orderDTO) {
-        User user = userRepository.findById(orderDTO.getUserId())
-                .orElseThrow(() -> new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " user id: " + orderDTO.getUserId())));
+        User user = this.findUserById(orderDTO.getUserId());
 
         modelMapper.typeMap(OrderDTO.class, Order.class)
                 .addMappings(mapper -> mapper.skip(Order::setId));
@@ -59,10 +88,7 @@ public class OrderServiceImpl implements OrderService {
         for (CartItemDTO cartItemDTO : orderDTO.getCartItems()) {
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
-            Product product = productRepository
-                    .findById(cartItemDTO.getProductId())
-                    .orElseThrow(() ->
-                            new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " product id: " + cartItemDTO.getProductId())));
+            Product product = this.findProductById(cartItemDTO.getProductId());
             if (product.getQuantity() < cartItemDTO.getQuantity())
                 throw new BadRequestException("Số lượng sản phẩm trong kho không đủ");
             product.setQuantity(product.getQuantity() - cartItemDTO.getQuantity());
@@ -83,20 +109,18 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse updateOrder(Long id, OrderDTO orderDTO) {
-        Order order = orderRepository.findById(id).orElseThrow(() -> new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " order id:" + id)));
-        User user = userRepository.findById(orderDTO.getUserId())
-                .orElseThrow(() -> new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " user id: " + orderDTO.getUserId())));
+        Order order = this.findOrderById(id);
+        User user = this.findUserById(orderDTO.getUserId());
         modelMapper.typeMap(OrderDTO.class, Order.class)
                 .addMappings(mapper -> mapper.skip(Order::setId));
         modelMapper.map(orderDTO, order);
         order.setUser(user);
-
         return modelMapper.map(orderRepository.save(order), OrderResponse.class);
     }
 
     @Override
     public void deleteOrderById(Long id) {
-        Order order = orderRepository.findById(id).orElseThrow(() -> new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " order id:" + id)));
+        Order order = this.findOrderById(id);
         order.setActive(false);
         orderRepository.save(order);
     }
@@ -104,20 +128,12 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResponse> getAllOrders() {
         return orderRepository.findAll()
-                .stream().map(order -> {
-                    OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
-                    List<OrderDetailResponse> orderDetailResponses = order.getOrderDetails()
-                            .stream().map(orderDetail ->
-                                    modelMapper.map(orderDetail, OrderDetailResponse.class)).toList();
-                    orderResponse.setOrderDetailResponses(orderDetailResponses);
-                    return orderResponse;
-                }).toList();
-
+                .stream().map(this::mapOrderToOrderResponse).toList();
     }
 
     @Override
     public OrderResponse getOrderById(Long id) {
-        Order order = orderRepository.findById(id).orElseThrow(() -> new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " order id:" + id)));
+        Order order = this.findOrderById(id);
         OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
         List<OrderDetailResponse> orderDetailResponses = order.getOrderDetails()
                 .stream().map(orderDetail ->
@@ -128,18 +144,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> getOrdersByUserId(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " user id: " + userId)));
-
+        User user = this.findUserById(userId);
         return orderRepository.findAllByUser(user)
-                .stream().map(order -> {
-                    OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
-                    List<OrderDetailResponse> orderDetailResponses = order.getOrderDetails()
-                            .stream().map(orderDetail ->
-                                    modelMapper.map(orderDetail, OrderDetailResponse.class)).toList();
-                    orderResponse.setOrderDetailResponses(orderDetailResponses);
-                    return orderResponse;
-                }).toList();
+                .stream().map(this::mapOrderToOrderResponse).toList();
     }
 
     @Override
@@ -150,22 +157,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public PageResponse<OrderResponse> findByUserIdAndKeyword(long userId, String keyword, Pageable pageable) {
-        if (!userRepository.existsById(userId))
-            throw new NotFoundException("Không tìm thấy tài khoản");
-        Page<Order> orders = orderRepository.findByUserIdAndKeyword(userId, keyword, pageable);
+        User user = this.findUserById(userId);
+        Page<Order> orders = orderRepository.findByUserIdAndKeyword(user.getId(), keyword, pageable);
         return getOrderResponsePageResponse(orders);
     }
 
     private PageResponse<OrderResponse> getOrderResponsePageResponse(Page<Order> orders) {
         List<OrderResponse> orderResponseList = orders
-                .stream().map(order -> {
-                    OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
-                    List<OrderDetailResponse> orderDetailResponses = order.getOrderDetails()
-                            .stream().map(orderDetail ->
-                                    modelMapper.map(orderDetail, OrderDetailResponse.class)).toList();
-                    orderResponse.setOrderDetailResponses(orderDetailResponses);
-                    return orderResponse;
-                }).toList();
+                .stream().map(this::mapOrderToOrderResponse).toList();
         return PageResponse.<OrderResponse>builder()
                 .contents(orderResponseList)
                 .numberOfElements(orders.getNumberOfElements())

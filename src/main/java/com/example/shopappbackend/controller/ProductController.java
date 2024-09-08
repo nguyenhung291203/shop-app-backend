@@ -1,21 +1,21 @@
 package com.example.shopappbackend.controller;
 
+import com.example.shopappbackend.dto.PageProductDTO;
 import com.example.shopappbackend.dto.ProductDTO;
 import com.example.shopappbackend.dto.ProductImageDTO;
 import com.example.shopappbackend.exception.NotFoundException;
 import com.example.shopappbackend.model.ProductImage;
+import com.example.shopappbackend.response.PageResponse;
+import com.example.shopappbackend.response.ProductResponse;
 import com.example.shopappbackend.response.ResponseApi;
+import com.example.shopappbackend.service.ProductRedisService;
 import com.example.shopappbackend.service.ProductService;
 import com.example.shopappbackend.utils.FileServiceUtil;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
-import com.example.shopappbackend.utils.ParamUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.UrlResource;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("${api.prefix}/products")
@@ -39,13 +38,21 @@ public class ProductController {
     private final ProductService productService;
     private final FileServiceUtil fileServiceUtil;
     private final LocalizationUtil localizationUtil;
-    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
+    private final ProductRedisService productRedisService;
 
-    @GetMapping("")
-    public ResponseEntity<?> getAllProducts(@RequestParam Map<String, Object> params) {
-        String search = ParamUtil.getSearchParam(params).trim();
-        Pageable pageable = ParamUtil.getPageable(params);
-        return ResponseEntity.ok(ResponseApi.builder().data(productService.getAllProducts(search, pageable)).message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_GET_SUCCESSFULLY)).build());
+    @PostMapping("/search")
+    public ResponseEntity<?> getAllProducts(@Valid @RequestBody PageProductDTO pageProductDTO) {
+        PageResponse<ProductResponse> response = productRedisService.getAllProducts(pageProductDTO);
+        if (response == null) {
+            response = productService.getAllProducts(pageProductDTO);
+            productRedisService.saveAllProducts(response, pageProductDTO);
+        }
+
+        return ResponseEntity.ok(ResponseApi.builder()
+                .data(response)
+                .message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_GET_SUCCESSFULLY))
+                .build());
+
     }
 
     @GetMapping("/{id}")

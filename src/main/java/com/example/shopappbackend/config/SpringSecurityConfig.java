@@ -51,6 +51,7 @@ public class SpringSecurityConfig implements WebMvcConfigurer {
                         .requestMatchers(HttpMethod.PUT, String.format("%s/categories/**", apiPrefix)).hasAnyRole(Role.ADMIN)
                         .requestMatchers(HttpMethod.DELETE, String.format("%s/categories/**", apiPrefix)).hasAnyRole(Role.ADMIN)
                         .requestMatchers(HttpMethod.GET, String.format("%s/products/**", apiPrefix)).permitAll()
+                        .requestMatchers(HttpMethod.POST, String.format("%s/products/search/**", apiPrefix)).permitAll()
                         .requestMatchers(HttpMethod.POST, String.format("%s/products/**", apiPrefix)).hasAnyRole(Role.ADMIN)
                         .requestMatchers(HttpMethod.PUT, String.format("%s/products/**", apiPrefix)).hasAnyRole(Role.ADMIN)
                         .requestMatchers(HttpMethod.DELETE, String.format("%s/products/**", apiPrefix)).hasAnyRole(Role.ADMIN)

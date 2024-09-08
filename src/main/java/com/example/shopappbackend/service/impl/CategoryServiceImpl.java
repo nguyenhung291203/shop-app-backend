@@ -65,7 +65,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category updateCategory(long id, CategoryDTO category) {
         Category categoryNew = this.getCategoryById(id);
         categoryNew.setName(category.getName());
-        return categoryNew;
+        return categoryRepository.save(categoryNew);
     }
 
     @Override

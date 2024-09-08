@@ -1,5 +1,6 @@
 package com.example.shopappbackend.model;
 
+import com.example.shopappbackend.model.base.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;

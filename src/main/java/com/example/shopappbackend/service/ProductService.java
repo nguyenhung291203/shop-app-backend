@@ -1,5 +1,6 @@
 package com.example.shopappbackend.service;
 
+import com.example.shopappbackend.dto.PageProductDTO;
 import com.example.shopappbackend.dto.ProductDTO;
 import com.example.shopappbackend.dto.ProductImageDTO;
 import com.example.shopappbackend.model.Product;
@@ -12,7 +13,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface ProductService {
-    PageResponse<ProductResponse> getAllProducts(String search, Pageable pageable);
+    PageResponse<ProductResponse> getAllProducts(PageProductDTO pageProductDTO);
 
     ProductResponse getProductById(Long id);
     List<ProductResponse> getAllProductsByIds(List<Long> ids);

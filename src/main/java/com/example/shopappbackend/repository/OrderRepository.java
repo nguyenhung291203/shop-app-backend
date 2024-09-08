@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -26,4 +27,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "(:keyword is null or :keyword = '' or o.fullName like %:keyword% " +
             "or o.address like %:keyword% or o.note like %:keyword% or o.paymentMethod like %:keyword% or o.status like %:keyword%)")
     Page<Order> findByUserIdAndKeyword(Long userId, String keyword, Pageable pageable);
+
+    @Query("select o from Order o where " +
+            "(:userId is null or o.user.id = :userId)" +
+            "and (:keyword is null or :keyword = '' " +
+            "or o.fullName like %:keyword% " +
+            "or o.address like %:keyword% " +
+            "or o.note like %:keyword% " +
+            "or o.paymentMethod like %:keyword% )" +
+            "and (:status is null or o.status=:status)" +
+            "and (:startDate is null or o.orderDate >= :startDate) " +
+            "and (:endDate is null or o.orderDate <= :endDate)")
+    Page<Order> findByKeywordAndDateRange(Long userId, String status, String keyword, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 }

@@ -17,7 +17,6 @@ import com.example.shopappbackend.service.UserService;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -36,8 +35,6 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final LocalizationUtil localizationUtil;
     private final JwtTokenProvider jwtTokenProvider;
-    @Value("${app-jwt-expiration-milliseconds}")
-    private Long expirationDate;
 
     @Override
     public User register(UserRegisterDTO userRegisterDTO) {
@@ -64,7 +61,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public String login(UserLoginDTO userLoginDTO) {
         User user = this.userRepository.findUserByPhoneNumber(userLoginDTO.getPhoneNumber());
-
         if (user == null)
             throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.LOGIN_FAILURE));
         if (user.getFacebookAccountId() == null
@@ -72,7 +68,8 @@ public class UserServiceImpl implements UserService {
             if (!passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword()))
                 throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.LOGIN_FAILURE));
         }
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userLoginDTO.getPhoneNumber(), userLoginDTO.getPassword()));
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(userLoginDTO.getPhoneNumber(), userLoginDTO.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return jwtTokenProvider.generateToken(authentication);
     }
@@ -91,9 +88,6 @@ public class UserServiceImpl implements UserService {
         User user = this.userRepository.findUserByPhoneNumber(phoneNumber);
         if (!user.isActive())
             throw new BadRequestException("Tài khoản đã bị khóa");
-
-        if (user == null)
-            throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.LOGIN_FAILURE));
         return UserMapping.mapUserToUserResponse(user);
     }
 
@@ -111,19 +105,13 @@ public class UserServiceImpl implements UserService {
                     () -> new NotFoundException("Quyền truy cập không tồn tại"));
             user.setRole(role);
         }
-
         User userFindByPhoneNumber = this.userRepository.findUserByPhoneNumber(userUpdateDTO.getPhoneNumber());
-
-        if (!userFindByPhoneNumber.equals(user) && userFindByPhoneNumber != null)
+        if (!userFindByPhoneNumber.equals(user))
             throw new BadRequestException("Số điện thoại đã được sử dụng");
-
         user.setDateOfBirth(userUpdateDTO.getDateOfBirth());
-
         user.setFullName(userUpdateDTO.getFullName());
-
         user.setActive(userUpdateDTO.isActive());
         user.setAddress(userUpdateDTO.getAddress());
-
         return UserMapping.mapUserToUserResponse(userRepository.save(user));
     }
 }
