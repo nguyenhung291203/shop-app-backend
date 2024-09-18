@@ -13,8 +13,6 @@ import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    List<Order> findAllByUserId(Long userId);
-
     List<Order> findAllByUser(User user);
 
     @Query("select o from Order o where" +
@@ -29,14 +27,23 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findByUserIdAndKeyword(Long userId, String keyword, Pageable pageable);
 
     @Query("select o from Order o where " +
-            "(:userId is null or o.user.id = :userId)" +
+            "(:userId is null or o.user.id = :userId) " +
             "and (:keyword is null or :keyword = '' " +
-            "or o.fullName like %:keyword% " +
-            "or o.address like %:keyword% " +
-            "or o.note like %:keyword% " +
-            "or o.paymentMethod like %:keyword% )" +
-            "and (:status is null or o.status=:status)" +
+            "or lower(o.fullName) like lower(concat('%', :keyword, '%')) " +
+            "or lower(o.address) like lower(concat('%', :keyword, '%')) " +
+            "or lower(o.note) like lower(concat('%', :keyword, '%')) " +
+            "or lower(o.paymentMethod) like lower(concat('%', :keyword, '%'))) " +
+            "and (:status is null or o.status = :status) " +
             "and (:startDate is null or o.orderDate >= :startDate) " +
             "and (:endDate is null or o.orderDate <= :endDate)")
-    Page<Order> findByKeywordAndDateRange(Long userId, String status, String keyword, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+    Page<Order> findByUserIdAndStatusAndKeywordAndOrderDateBetween(
+            Long userId,
+            String status,
+            String keyword,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            Pageable pageable
+    );
+
+
 }

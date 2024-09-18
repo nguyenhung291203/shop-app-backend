@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class PageOrderDTO extends PageRequest {
     @JsonProperty("user_id")
     private Long userId;
-    private String status;
+    private String status ;
     @JsonProperty("start_date")
     private LocalDateTime startDate;
     @JsonProperty("end_date")

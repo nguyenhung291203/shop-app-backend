@@ -10,6 +10,7 @@ import com.example.shopappbackend.model.Category;
 import com.example.shopappbackend.model.Product;
 import com.example.shopappbackend.model.ProductImage;
 import com.example.shopappbackend.repository.CategoryRepository;
+import com.example.shopappbackend.repository.OrderDetailRepository;
 import com.example.shopappbackend.repository.ProductImageRepository;
 import com.example.shopappbackend.repository.ProductRepository;
 import com.example.shopappbackend.response.PageResponse;
@@ -34,8 +35,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
+    private final OrderDetailRepository orderDetailRepository;
     private final LocalizationUtil localizationUtil;
-    private final RedisTemplate redisTemplate;
     private final ProductMapping productMapping;
 
     private Product findProductById(long id) {
@@ -73,7 +74,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getAllProductsByIds(List<Long> ids) {
-        List<Product> products = ids.isEmpty() ? productRepository.findAll() : productRepository.findAllById(ids);
+        List<Product> products =  productRepository.findAllById(ids);
         return products.stream().map(this::mapProductToProductResponse).collect(Collectors.toList());
     }
 
@@ -81,7 +82,18 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductResponse insertProduct(ProductDTO productDTO) {
         Category category = this.findCategoryById(productDTO.getCategoryId());
-        Product product = Product.builder().name(productDTO.getName()).thumbnail(productDTO.getDescription()).description(productDTO.getDescription()).category(category).price(productDTO.getPrice()).build();
+        if (productRepository.existsByName(productDTO.getName()))
+            throw new BadRequestException("Tên sản phẩm đã tồn tại");
+        Product product = Product.builder()
+                .name(productDTO.getName())
+                .thumbnail(productDTO.getDescription())
+                .description(productDTO.getDescription())
+                .category(category)
+                .price(productDTO.getPrice())
+                .sold(productDTO.getSold())
+                .quantity(productDTO.getQuantity())
+                .rating(productDTO.getRating())
+                .build();
 
         return this.mapProductToProductResponse(productRepository.save(product));
     }
@@ -103,6 +115,8 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void deleteProductById(Long id) {
         Product product = this.findProductById(id);
+        if (this.orderDetailRepository.existsByProductId(id))
+            throw new BadRequestException("Không thể xóa sản phẩm này ở trong thông tin hóa đơn khách hàng");
         this.productRepository.delete(product);
     }
 
@@ -121,10 +135,16 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void generateFakeProducts() {
         Faker faker = new Faker();
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 100; i++) {
             String productName = faker.commerce().productName();
             if (productRepository.existsByName(productName)) continue;
-            ProductDTO productDTO = ProductDTO.builder().name(productName).price(faker.number().numberBetween(10, 1000)).description(faker.lorem().sentence()).categoryId((long) faker.number().numberBetween(2, 5)).build();
+            ProductDTO productDTO = ProductDTO.builder()
+                    .name(productName)
+                    .price(faker.number().numberBetween(10, 1000))
+                    .quantity(faker.number().numberBetween(100, 1000))
+                    .description(faker.lorem().sentence())
+                    .categoryId((long) faker.number().numberBetween(2, 5))
+                    .build();
             insertProduct(productDTO);
         }
     }

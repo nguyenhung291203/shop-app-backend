@@ -15,9 +15,11 @@ public class ProductMapping {
 
     public ProductResponse mapProductToProductResponse(Product product, List<String> images) {
         ProductResponse productResponse = ProductResponse.builder()
-                .categoryId(product.getCategory().getId())
+                .category(product.getCategory())
                 .description(product.getDescription())
-                .thumbnail(urlProductImageUtil.generateUrlProductImage(product.getThumbnail()))
+                .thumbnail((product.getThumbnail() == null || product.getThumbnail().isEmpty()) ?
+                        "" :
+                        urlProductImageUtil.generateUrlProductImage(product.getThumbnail()))
                 .price(product.getPrice())
                 .name(product.getName())
                 .quantity(product.getQuantity())

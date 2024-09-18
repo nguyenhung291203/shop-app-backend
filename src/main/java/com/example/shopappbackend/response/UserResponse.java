@@ -12,6 +12,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 @Builder
 public class UserResponse {
+    private Long id;
     @JsonProperty("fullname")
     private String fullName;
     @JsonProperty("phone_number")

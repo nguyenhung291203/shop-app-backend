@@ -38,7 +38,6 @@ public class SpringSecurityConfig implements WebMvcConfigurer {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, String.format("%s/users/login", apiPrefix)).permitAll()
                         .requestMatchers(HttpMethod.POST, String.format("%s/users/register", apiPrefix)).permitAll()
@@ -53,6 +52,7 @@ public class SpringSecurityConfig implements WebMvcConfigurer {
                         .requestMatchers(HttpMethod.GET, String.format("%s/products/**", apiPrefix)).permitAll()
                         .requestMatchers(HttpMethod.POST, String.format("%s/products/search/**", apiPrefix)).permitAll()
                         .requestMatchers(HttpMethod.POST, String.format("%s/products/**", apiPrefix)).hasAnyRole(Role.ADMIN)
+                        .requestMatchers(HttpMethod.POST, String.format("%s/products/generateFakeProducts", apiPrefix)).hasAnyRole(Role.ADMIN)
                         .requestMatchers(HttpMethod.PUT, String.format("%s/products/**", apiPrefix)).hasAnyRole(Role.ADMIN)
                         .requestMatchers(HttpMethod.DELETE, String.format("%s/products/**", apiPrefix)).hasAnyRole(Role.ADMIN)
                         .requestMatchers(HttpMethod.GET, String.format("%s/product-images/**", apiPrefix)).permitAll()

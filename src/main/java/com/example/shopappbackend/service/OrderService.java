@@ -1,6 +1,7 @@
 package com.example.shopappbackend.service;
 
 import com.example.shopappbackend.dto.OrderDTO;
+import com.example.shopappbackend.dto.PageOrderDTO;
 import com.example.shopappbackend.response.OrderResponse;
 import com.example.shopappbackend.response.PageResponse;
 import org.springframework.data.domain.Pageable;
@@ -22,5 +23,7 @@ public interface OrderService {
 
     PageResponse<OrderResponse> findByKeyword(String keyword, Pageable pageable);
 
-    PageResponse<OrderResponse> findByUserIdAndKeyword(long userId,String keyword, Pageable pageable);
+    PageResponse<OrderResponse> findByUserIdAndKeyword(long userId, String keyword, Pageable pageable);
+
+    PageResponse<OrderResponse> findAllOrders(PageOrderDTO pageOrderDTO);
 }

@@ -1,6 +1,6 @@
 package com.example.shopappbackend.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.example.shopappbackend.model.Category;
 import lombok.*;
 
 import java.util.List;
@@ -15,8 +15,7 @@ public class ProductResponse extends BaseResponse {
     private String name;
     private String thumbnail;
     private String description;
-    @JsonProperty("category_id")
-    private long categoryId;
+    private Category category;
     private int quantity;
     private float rating;
     private int sold;

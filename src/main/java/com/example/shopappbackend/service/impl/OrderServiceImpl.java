@@ -3,6 +3,7 @@ package com.example.shopappbackend.service.impl;
 
 import com.example.shopappbackend.dto.CartItemDTO;
 import com.example.shopappbackend.dto.OrderDTO;
+import com.example.shopappbackend.dto.PageOrderDTO;
 import com.example.shopappbackend.exception.BadRequestException;
 import com.example.shopappbackend.exception.NotFoundException;
 import com.example.shopappbackend.model.*;
@@ -16,6 +17,7 @@ import com.example.shopappbackend.response.PageResponse;
 import com.example.shopappbackend.service.OrderService;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
+import com.example.shopappbackend.utils.PageRequestUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -158,7 +160,25 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public PageResponse<OrderResponse> findByUserIdAndKeyword(long userId, String keyword, Pageable pageable) {
         User user = this.findUserById(userId);
-        Page<Order> orders = orderRepository.findByUserIdAndKeyword(user.getId(), keyword, pageable);
+        Page<Order> orders = orderRepository.findByUserIdAndKeyword(user.getId()
+                , keyword
+                , pageable);
+        return getOrderResponsePageResponse(orders);
+    }
+
+    @Override
+    public PageResponse<OrderResponse> findAllOrders(PageOrderDTO pageOrderDTO) {
+        if (pageOrderDTO.getUserId() != null) {
+            this.findUserById(pageOrderDTO.getUserId());
+        }
+        Page<Order> orders = orderRepository.findByUserIdAndStatusAndKeywordAndOrderDateBetween(
+                pageOrderDTO.getUserId(),
+                pageOrderDTO.getStatus(),
+                pageOrderDTO.getKeyword(),
+                pageOrderDTO.getStartDate(),
+                pageOrderDTO.getEndDate(),
+                PageRequestUtil.getPageable(pageOrderDTO)
+        );
         return getOrderResponsePageResponse(orders);
     }
 

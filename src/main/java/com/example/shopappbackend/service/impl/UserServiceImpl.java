@@ -39,17 +39,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public User register(UserRegisterDTO userRegisterDTO) {
         if (this.userRepository.existsUserByPhoneNumber(userRegisterDTO.getPhoneNumber()))
-            throw new DataIntegrityViolationException(localizationUtil
-                    .getLocaleResolver(MessageKey.REGISTER_FAILURE_PHONE_NUMBER_ALREADY_EXIST));
+            throw new DataIntegrityViolationException(localizationUtil.getLocaleResolver(MessageKey.REGISTER_FAILURE_PHONE_NUMBER_ALREADY_EXIST));
         if (!userRegisterDTO.getPassword().equals(userRegisterDTO.getRetypePassword()))
-            throw new BadRequestException(localizationUtil
-                    .getLocaleResolver(MessageKey.REGISTER_FAILURE_INVALID_PASSWORD));
+            throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.REGISTER_FAILURE_INVALID_PASSWORD));
         User user = UserMapping.mapUserRegisterDTOtoUser(userRegisterDTO);
-        Role role = roleRepository.findById(userRegisterDTO.getRoleId())
-                .orElseThrow(() -> new NotFoundException(
-                        localizationUtil.getLocaleResolver(
-                                MessageKey.NOT_FOUND,
-                                userRegisterDTO.getRoleId())));
+        Role role = roleRepository.findById(userRegisterDTO.getRoleId()).orElseThrow(() -> new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, userRegisterDTO.getRoleId())));
         user.setRole(role);
         if (userRegisterDTO.getFacebookAccountId() == null && userRegisterDTO.getGoogleAccountId() == null) {
             user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
@@ -61,33 +55,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public String login(UserLoginDTO userLoginDTO) {
         User user = this.userRepository.findUserByPhoneNumber(userLoginDTO.getPhoneNumber());
-        if (user == null)
-            throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.LOGIN_FAILURE));
-        if (user.getFacebookAccountId() == null
-                && user.getGoogleAccountId() == null) {
+        if (user == null) throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.LOGIN_FAILURE));
+        if (user.getFacebookAccountId() == null && user.getGoogleAccountId() == null) {
             if (!passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword()))
                 throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.LOGIN_FAILURE));
         }
-        Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(userLoginDTO.getPhoneNumber(), userLoginDTO.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userLoginDTO.getPhoneNumber(), userLoginDTO.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return jwtTokenProvider.generateToken(authentication);
     }
 
     @Override
     public List<UserResponse> getAllUsers() {
-        return this.userRepository.findAll()
-                .stream().map(UserMapping::mapUserToUserResponse).toList();
+        return this.userRepository.findAll().stream().map(UserMapping::mapUserToUserResponse).toList();
     }
 
     @Override
     public UserResponse getUserDetail(String token) {
-        if (jwtTokenProvider.isExpired(token))
-            throw new BadRequestException("Phiên đăng nhập đã hết hạn");
+        if (jwtTokenProvider.isExpired(token)) throw new BadRequestException("Phiên đăng nhập đã hết hạn");
         String phoneNumber = jwtTokenProvider.getUsername(token);
         User user = this.userRepository.findUserByPhoneNumber(phoneNumber);
-        if (!user.isActive())
-            throw new BadRequestException("Tài khoản đã bị khóa");
+        if (!user.isActive()) throw new BadRequestException("Tài khoản đã bị khóa");
         return UserMapping.mapUserToUserResponse(user);
     }
 
@@ -100,14 +88,11 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(userUpdateDTO.getPassword()));
         }
         if (userUpdateDTO.getRoleId() != null) {
-            Role role = roleRepository.findById(userUpdateDTO
-                    .getRoleId()).orElseThrow(
-                    () -> new NotFoundException("Quyền truy cập không tồn tại"));
+            Role role = roleRepository.findById(userUpdateDTO.getRoleId()).orElseThrow(() -> new NotFoundException("Quyền truy cập không tồn tại"));
             user.setRole(role);
         }
         User userFindByPhoneNumber = this.userRepository.findUserByPhoneNumber(userUpdateDTO.getPhoneNumber());
-        if (!userFindByPhoneNumber.equals(user))
-            throw new BadRequestException("Số điện thoại đã được sử dụng");
+        if (!userFindByPhoneNumber.equals(user)) throw new BadRequestException("Số điện thoại đã được sử dụng");
         user.setDateOfBirth(userUpdateDTO.getDateOfBirth());
         user.setFullName(userUpdateDTO.getFullName());
         user.setActive(userUpdateDTO.isActive());

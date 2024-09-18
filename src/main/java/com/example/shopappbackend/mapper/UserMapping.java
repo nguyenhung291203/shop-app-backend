@@ -20,6 +20,7 @@ public class UserMapping {
 
     public static UserResponse mapUserToUserResponse(User user) {
         return UserResponse.builder()
+                .id(user.getId())
                 .roleId(user.getRole().getId())
                 .dateOfBirth(user.getDateOfBirth())
                 .facebookAccountId(user.getFacebookAccountId())

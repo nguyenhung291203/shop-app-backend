@@ -21,7 +21,7 @@ public class PageRequest {
 
     @Override
     public String toString() {
-        return "keyword:" + keyword + '-'
+        return "keyword:" + keyword.trim() + '-'
                 + "page:" + page + '-'
                 + "limit:" + limit + '-'
                 + "sort_by:" + sortBy + '-'

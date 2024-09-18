@@ -2,12 +2,12 @@ package com.example.shopappbackend.controller;
 
 import com.example.shopappbackend.dto.PageProductDTO;
 import com.example.shopappbackend.dto.ProductDTO;
-import com.example.shopappbackend.dto.ProductImageDTO;
 import com.example.shopappbackend.exception.NotFoundException;
 import com.example.shopappbackend.model.ProductImage;
 import com.example.shopappbackend.response.PageResponse;
 import com.example.shopappbackend.response.ProductResponse;
 import com.example.shopappbackend.response.ResponseApi;
+import com.example.shopappbackend.service.ProductImageService;
 import com.example.shopappbackend.service.ProductRedisService;
 import com.example.shopappbackend.service.ProductService;
 import com.example.shopappbackend.utils.FileServiceUtil;
@@ -23,10 +23,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -39,6 +37,7 @@ public class ProductController {
     private final FileServiceUtil fileServiceUtil;
     private final LocalizationUtil localizationUtil;
     private final ProductRedisService productRedisService;
+    private final ProductImageService productImageService;
 
     @PostMapping("/search")
     public ResponseEntity<?> getAllProducts(@Valid @RequestBody PageProductDTO pageProductDTO) {
@@ -74,28 +73,15 @@ public class ProductController {
     }
 
     @PostMapping(value = "/{id}/upload-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> insertProductImage(@Valid @PathVariable Long id, @ModelAttribute("files") List<MultipartFile> files) {
+    public ResponseEntity<?> insertProductImage(@Valid @PathVariable Long id, @RequestParam("files") List<MultipartFile> files) {
         try {
-            files = files.isEmpty() ? new ArrayList<>() : files;
-            List<ProductImage> productImages = new ArrayList<>();
-            for (MultipartFile file : files) {
-                if (!file.isEmpty()) {
-                    String validationError = fileServiceUtil.validateFile(file);
-                    if (validationError != null) {
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationError);
-                    }
-                    String fileName = fileServiceUtil.storeFile(file);
-
-                    ProductImage productImage = productService.insertProductImage(id, ProductImageDTO.builder().productId(id).imageUrl(fileName).build());
-                    productImages.add(productImage);
-                }
-            }
+            List<ProductImage> productImages = productImageService.uploadProductImages(id, files);
             return new ResponseEntity<>(ResponseApi.builder()
                     .data(productImages)
                     .message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_IMAGE_UPLOAD_SUCCESSFULLY))
                     .build(), HttpStatus.CREATED);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error storing file");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
@@ -121,7 +107,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduct(@Valid @PathVariable long id) {
+    public ResponseEntity<?> deleteProductById(@Valid @PathVariable long id) {
         productService.deleteProductById(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(ResponseApi.builder()
@@ -130,9 +116,9 @@ public class ProductController {
                         .build());
     }
 
-    //    @PostMapping("/generateFakeProducts")
-    private ResponseEntity<?> generateFakeProducts() {
-        productService.generateFakeProducts();
+    @PostMapping("/generateFakeProducts")
+    public ResponseEntity<?> generateFakeProducts() {
+        productService. generateFakeProducts();
         return ResponseEntity.ok("Success");
     }
 }

@@ -2,8 +2,11 @@ package com.example.shopappbackend.model;
 
 import com.example.shopappbackend.model.base.BaseEntity;
 import com.example.shopappbackend.model.listener.ProductListener;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -29,4 +32,8 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "category_id")
     private Category category;
     private float price;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<ProductImage> productImages;
 }

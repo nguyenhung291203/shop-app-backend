@@ -17,7 +17,8 @@ public class CustomExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<ErrorException<String>> handleNotFoundException(NotFoundException ex, WebRequest req) {
         ErrorException<String> errorException = new ErrorException<>(ex.getMessage(), req.getDescription(false));
-        return new ResponseEntity<>(errorException, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(errorException,
+                HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(BadRequestException.class)
@@ -38,7 +39,6 @@ public class CustomExceptionHandler {
     public ResponseEntity<ErrorException<List<String>>> handleValidationException(MethodArgumentNotValidException ex, WebRequest req) {
         List<String> errors = new ArrayList<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
-//            String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.add(errorMessage);
         });

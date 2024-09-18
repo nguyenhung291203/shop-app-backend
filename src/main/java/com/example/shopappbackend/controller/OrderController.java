@@ -1,6 +1,7 @@
 package com.example.shopappbackend.controller;
 
 import com.example.shopappbackend.dto.OrderDTO;
+import com.example.shopappbackend.dto.PageOrderDTO;
 import com.example.shopappbackend.response.ResponseApi;
 import com.example.shopappbackend.service.OrderService;
 import com.example.shopappbackend.utils.LocalizationUtil;
@@ -42,6 +43,7 @@ public class OrderController {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> insertOrder(@Valid @RequestBody OrderDTO orderDTO) {
         return new ResponseEntity<>(ResponseApi.builder()
                 .data(orderService.insertOrder(orderDTO))
@@ -69,6 +71,7 @@ public class OrderController {
     }
 
     @GetMapping("/users/{userId}")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<?> getOrdersByOrderId(@Valid @PathVariable Long userId) {
         return new ResponseEntity<>(ResponseApi.builder()
                 .data(orderService.getOrdersByUserId(userId))
@@ -86,12 +89,19 @@ public class OrderController {
                 .build(), HttpStatus.OK);
     }
 
-    @GetMapping("/users/{userId}/search")
-    public ResponseEntity<?> findByUserIdAndKeyword(@Valid @PathVariable Long userId, @Valid @RequestParam("keyword") String keyword, @Valid @RequestParam Map<String, Object> params) {
-        Pageable pageable = ParamUtil.getPageable(params);
-        keyword = keyword.trim();
+    @PostMapping("/users/{userId}/search")
+    public ResponseEntity<?> findByUserIdAndKeyword(@Valid @PathVariable Long userId, @Valid @RequestBody PageOrderDTO pageOrderDTO) {
+        pageOrderDTO.setUserId(userId);
         return new ResponseEntity<>(ResponseApi.builder()
-                .data(orderService.findByUserIdAndKeyword(userId, keyword, pageable))
+                .data(orderService.findAllOrders(pageOrderDTO))
+                .build(), HttpStatus.OK);
+    }
+
+    @PostMapping("/search")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
+    public ResponseEntity<?> findAllOrders(@Valid @RequestBody PageOrderDTO pageOrderDTO) {
+        return new ResponseEntity<>(ResponseApi.builder()
+                .data(orderService.findAllOrders(pageOrderDTO))
                 .build(), HttpStatus.OK);
     }
 }
