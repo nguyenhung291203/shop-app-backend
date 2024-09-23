@@ -1,10 +1,11 @@
 package com.example.shopappbackend.repository;
 
-import com.example.shopappbackend.model.ProductImage;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.example.shopappbackend.model.ProductImage;
 
 @Repository
 public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {

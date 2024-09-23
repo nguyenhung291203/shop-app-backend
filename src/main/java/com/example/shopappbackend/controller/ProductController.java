@@ -1,5 +1,19 @@
 package com.example.shopappbackend.controller;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
+import jakarta.validation.Valid;
+
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.shopappbackend.dto.PageProductDTO;
 import com.example.shopappbackend.dto.ProductDTO;
 import com.example.shopappbackend.exception.NotFoundException;
@@ -13,19 +27,8 @@ import com.example.shopappbackend.service.ProductService;
 import com.example.shopappbackend.utils.FileServiceUtil;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("${api.prefix}/products")
@@ -51,12 +54,14 @@ public class ProductController {
                 .data(response)
                 .message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_GET_SUCCESSFULLY))
                 .build());
-
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getProductById(@Valid @PathVariable Long id) {
-        return ResponseEntity.ok(ResponseApi.builder().data(productService.getProductById(id)).message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_GET_SUCCESSFULLY)).build());
+        return ResponseEntity.ok(ResponseApi.builder()
+                .data(productService.getProductById(id))
+                .message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_GET_SUCCESSFULLY))
+                .build());
     }
 
     @GetMapping("/by-ids")
@@ -69,17 +74,25 @@ public class ProductController {
 
     @PostMapping("")
     public ResponseEntity<?> insertProduct(@Valid @RequestBody ProductDTO productDTO) {
-        return new ResponseEntity<>(ResponseApi.builder().message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_INSERT_SUCCESSFULLY)).data(productService.insertProduct(productDTO)).build(), HttpStatus.CREATED);
+        return new ResponseEntity<>(
+                ResponseApi.builder()
+                        .message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_INSERT_SUCCESSFULLY))
+                        .data(productService.insertProduct(productDTO))
+                        .build(),
+                HttpStatus.CREATED);
     }
 
     @PostMapping(value = "/{id}/upload-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> insertProductImage(@Valid @PathVariable Long id, @RequestParam("files") List<MultipartFile> files) {
+    public ResponseEntity<?> insertProductImage(
+            @Valid @PathVariable Long id, @RequestParam("files") List<MultipartFile> files) {
         try {
             List<ProductImage> productImages = productImageService.uploadProductImages(id, files);
-            return new ResponseEntity<>(ResponseApi.builder()
-                    .data(productImages)
-                    .message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_IMAGE_UPLOAD_SUCCESSFULLY))
-                    .build(), HttpStatus.CREATED);
+            return new ResponseEntity<>(
+                    ResponseApi.builder()
+                            .data(productImages)
+                            .message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_IMAGE_UPLOAD_SUCCESSFULLY))
+                            .build(),
+                    HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
@@ -118,7 +131,7 @@ public class ProductController {
 
     @PostMapping("/generateFakeProducts")
     public ResponseEntity<?> generateFakeProducts() {
-        productService. generateFakeProducts();
+        productService.generateFakeProducts();
         return ResponseEntity.ok("Success");
     }
 }

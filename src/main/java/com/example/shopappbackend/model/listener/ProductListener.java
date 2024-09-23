@@ -1,11 +1,14 @@
 package com.example.shopappbackend.model.listener;
 
-import com.example.shopappbackend.model.Product;
-import com.example.shopappbackend.service.ProductRedisService;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.example.shopappbackend.model.Product;
+import com.example.shopappbackend.service.ProductRedisService;
+
+import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class ProductListener {

@@ -1,12 +1,13 @@
 package com.example.shopappbackend.service;
 
+import java.util.List;
+
+import org.springframework.data.domain.Pageable;
+
 import com.example.shopappbackend.dto.OrderDTO;
 import com.example.shopappbackend.dto.PageOrderDTO;
 import com.example.shopappbackend.response.OrderResponse;
 import com.example.shopappbackend.response.PageResponse;
-import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 public interface OrderService {
     OrderResponse insertOrder(OrderDTO orderDTO);

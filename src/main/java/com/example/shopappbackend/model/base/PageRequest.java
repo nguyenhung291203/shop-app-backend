@@ -1,7 +1,9 @@
 package com.example.shopappbackend.model.base;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.*;
 
 @AllArgsConstructor
@@ -10,13 +12,22 @@ import lombok.*;
 @Setter
 @Builder
 public class PageRequest {
+    @Builder.Default
     private String keyword = "";
+
     @Min(value = 1, message = "Trang hiện tại không được nhỏ hơn 1")
+    @Builder.Default
     private int page = 1;
+
+    @Builder.Default
     private int limit = 10;
+
     @JsonProperty("sort_by")
+    @Builder.Default
     private String sortBy = "id";
+
     @JsonProperty("sort_dir")
+    @Builder.Default
     private String sortDir = "asc";
 
     @Override

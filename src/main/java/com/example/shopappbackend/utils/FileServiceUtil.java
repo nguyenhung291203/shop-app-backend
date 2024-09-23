@@ -1,13 +1,14 @@
 package com.example.shopappbackend.utils;
 
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Objects;
 import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 @Service
 public class FileServiceUtil {
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB

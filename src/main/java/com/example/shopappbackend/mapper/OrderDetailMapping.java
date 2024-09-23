@@ -6,7 +6,8 @@ import com.example.shopappbackend.model.OrderDetail;
 import com.example.shopappbackend.model.Product;
 
 public class OrderDetailMapping {
-    public static OrderDetail mapOrderDetailDTOToOrderDetail(OrderDetailDTO orderDetailDTO, Product product, Order order) {
+    public static OrderDetail mapOrderDetailDTOToOrderDetail(
+            OrderDetailDTO orderDetailDTO, Product product, Order order) {
         return OrderDetail.builder()
                 .color(orderDetailDTO.getColor())
                 .totalMoney(order.getTotalMoney())
@@ -14,6 +15,7 @@ public class OrderDetailMapping {
                 .price(orderDetailDTO.getPrice())
                 .product(product)
                 .order(order)
+                .product(product)
                 .build();
     }
 }

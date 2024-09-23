@@ -1,15 +1,18 @@
 package com.example.shopappbackend.security;
 
-import com.example.shopappbackend.model.User;
-import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.example.shopappbackend.model.Role;
+import com.example.shopappbackend.model.User;
+
+import lombok.*;
 
 @Getter
 @Setter
@@ -26,6 +29,12 @@ public class CustomUserDetails implements UserDetails {
     private Long facebookAccountId;
     private Long googleAccountId;
     private Collection<? extends GrantedAuthority> authorities;
+
+    public void setAuthorities(Role role) {
+        List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
+        authorityList.add(new SimpleGrantedAuthority(role.getName()));
+        this.authorities = authorityList;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -77,6 +86,4 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
-
 }

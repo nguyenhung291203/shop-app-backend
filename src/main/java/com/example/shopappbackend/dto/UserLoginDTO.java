@@ -1,8 +1,10 @@
 package com.example.shopappbackend.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.*;
 
 @AllArgsConstructor
@@ -15,6 +17,7 @@ public class UserLoginDTO {
     @NotBlank(message = "Số điện thoại là bắt buộc")
     @NotEmpty(message = "Số điện thoại là bắt buộc")
     private String phoneNumber;
+
     @NotBlank(message = "Mật khẩu là bất buộc")
     private String password;
 }

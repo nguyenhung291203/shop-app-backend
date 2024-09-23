@@ -1,11 +1,12 @@
 package com.example.shopappbackend.repository;
 
-import com.example.shopappbackend.model.Order;
-import com.example.shopappbackend.model.OrderDetail;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.example.shopappbackend.model.Order;
+import com.example.shopappbackend.model.OrderDetail;
 
 @Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {

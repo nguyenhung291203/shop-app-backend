@@ -1,7 +1,7 @@
 package com.example.shopappbackend.exception;
 
-public class UnauthorizedException extends RuntimeException{
-    public UnauthorizedException(String message){
+public class UnauthorizedException extends RuntimeException {
+    public UnauthorizedException(String message) {
         super(message);
     }
 }

@@ -1,5 +1,14 @@
 package com.example.shopappbackend.service.impl;
 
+import java.util.List;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.example.shopappbackend.dto.UserLoginDTO;
 import com.example.shopappbackend.dto.UserRegisterDTO;
 import com.example.shopappbackend.dto.UserUpdateDTO;
@@ -16,15 +25,8 @@ import com.example.shopappbackend.response.UserResponse;
 import com.example.shopappbackend.service.UserService;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -36,14 +38,23 @@ public class UserServiceImpl implements UserService {
     private final LocalizationUtil localizationUtil;
     private final JwtTokenProvider jwtTokenProvider;
 
+    private boolean isSocialLogin(User user) {
+        return user.getFacebookAccountId() != null || user.getGoogleAccountId() != null;
+    }
+
     @Override
     public User register(UserRegisterDTO userRegisterDTO) {
         if (this.userRepository.existsUserByPhoneNumber(userRegisterDTO.getPhoneNumber()))
-            throw new DataIntegrityViolationException(localizationUtil.getLocaleResolver(MessageKey.REGISTER_FAILURE_PHONE_NUMBER_ALREADY_EXIST));
+            throw new DataIntegrityViolationException(
+                    localizationUtil.getLocaleResolver(MessageKey.REGISTER_FAILURE_PHONE_NUMBER_ALREADY_EXIST));
         if (!userRegisterDTO.getPassword().equals(userRegisterDTO.getRetypePassword()))
-            throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.REGISTER_FAILURE_INVALID_PASSWORD));
+            throw new BadRequestException(
+                    localizationUtil.getLocaleResolver(MessageKey.REGISTER_FAILURE_INVALID_PASSWORD));
         User user = UserMapping.mapUserRegisterDTOtoUser(userRegisterDTO);
-        Role role = roleRepository.findById(userRegisterDTO.getRoleId()).orElseThrow(() -> new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, userRegisterDTO.getRoleId())));
+        Role role = roleRepository
+                .findById(userRegisterDTO.getRoleId())
+                .orElseThrow(() -> new NotFoundException(
+                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, userRegisterDTO.getRoleId())));
         user.setRole(role);
         if (userRegisterDTO.getFacebookAccountId() == null && userRegisterDTO.getGoogleAccountId() == null) {
             user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
@@ -55,19 +66,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public String login(UserLoginDTO userLoginDTO) {
         User user = this.userRepository.findUserByPhoneNumber(userLoginDTO.getPhoneNumber());
-        if (user == null) throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.LOGIN_FAILURE));
-        if (user.getFacebookAccountId() == null && user.getGoogleAccountId() == null) {
-            if (!passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword()))
-                throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.LOGIN_FAILURE));
+        if (user == null) {
+            throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.LOGIN_FAILURE));
         }
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userLoginDTO.getPhoneNumber(), userLoginDTO.getPassword()));
+
+        if (!isSocialLogin(user) && !passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
+            throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.LOGIN_FAILURE));
+        }
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userLoginDTO.getPhoneNumber(), userLoginDTO.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
         return jwtTokenProvider.generateToken(authentication);
     }
 
     @Override
     public List<UserResponse> getAllUsers() {
-        return this.userRepository.findAll().stream().map(UserMapping::mapUserToUserResponse).toList();
+        return this.userRepository.findAll().stream()
+                .map(UserMapping::mapUserToUserResponse)
+                .toList();
     }
 
     @Override
@@ -81,14 +99,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse updateUser(Long id, UserUpdateDTO userUpdateDTO) {
-        User user = this.userRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy tài khoản"));
+        User user =
+                this.userRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tìm thấy tài khoản"));
         if (userUpdateDTO.getPassword() != null && userUpdateDTO.getRetypePassword() != null) {
             if (!userUpdateDTO.getPassword().equals(userUpdateDTO.getRetypePassword()))
                 throw new BadRequestException("Mật khẩu không chính xác");
             user.setPassword(passwordEncoder.encode(userUpdateDTO.getPassword()));
         }
         if (userUpdateDTO.getRoleId() != null) {
-            Role role = roleRepository.findById(userUpdateDTO.getRoleId()).orElseThrow(() -> new NotFoundException("Quyền truy cập không tồn tại"));
+            Role role = roleRepository
+                    .findById(userUpdateDTO.getRoleId())
+                    .orElseThrow(() -> new NotFoundException("Quyền truy cập không tồn tại"));
             user.setRole(role);
         }
         User userFindByPhoneNumber = this.userRepository.findUserByPhoneNumber(userUpdateDTO.getPhoneNumber());

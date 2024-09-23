@@ -11,5 +11,4 @@ public class ShopAppBackendApplication {
     public static void main(String[] args) {
         SpringApplication.run(ShopAppBackendApplication.class, args);
     }
-
 }

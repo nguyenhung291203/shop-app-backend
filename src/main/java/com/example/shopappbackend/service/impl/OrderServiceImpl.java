@@ -1,11 +1,22 @@
 package com.example.shopappbackend.service.impl;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import jakarta.transaction.Transactional;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import com.example.shopappbackend.dto.CartItemDTO;
 import com.example.shopappbackend.dto.OrderDTO;
 import com.example.shopappbackend.dto.PageOrderDTO;
 import com.example.shopappbackend.exception.BadRequestException;
 import com.example.shopappbackend.exception.NotFoundException;
+import com.example.shopappbackend.mapper.ProductMapping;
 import com.example.shopappbackend.model.*;
 import com.example.shopappbackend.repository.OrderDetailRepository;
 import com.example.shopappbackend.repository.OrderRepository;
@@ -18,15 +29,8 @@ import com.example.shopappbackend.service.OrderService;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
 import com.example.shopappbackend.utils.PageRequestUtil;
-import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -37,43 +41,73 @@ public class OrderServiceImpl implements OrderService {
     private final LocalizationUtil localizationUtil;
     private final ProductRepository productRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final ProductMapping productMapping;
 
     private User findUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(localizationUtil
-                        .getLocaleResolver(MessageKey.NOT_FOUND, " user id: " + id)));
+        return userRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException(
+                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " user id: " + id)));
     }
 
     private Order findOrderById(Long id) {
-        return orderRepository.findById(id)
+        return orderRepository
+                .findById(id)
                 .orElseThrow(() -> new NotFoundException(
-                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND,
-                                " order id:" + id)));
+                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " order id:" + id)));
     }
 
     private Product findProductById(Long id) {
         return productRepository
                 .findById(id)
-                .orElseThrow(() ->
-                        new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND,
-                                " product id: " + id)));
+                .orElseThrow(() -> new NotFoundException(
+                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " product id: " + id)));
     }
 
     private OrderResponse mapOrderToOrderResponse(Order order) {
         OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
-        List<OrderDetailResponse> orderDetailResponses = order.getOrderDetails()
-                .stream().map(orderDetail ->
-                        modelMapper.map(orderDetail, OrderDetailResponse.class)).toList();
+        List<OrderDetailResponse> orderDetailResponses = order.getOrderDetails().stream()
+                .map(orderDetail -> modelMapper.map(orderDetail, OrderDetailResponse.class))
+                .toList();
         orderResponse.setOrderDetailResponses(orderDetailResponses);
         return orderResponse;
+    }
+
+    private OrderResponse mapOrderToOrderResponseWithDetails(Order order) {
+        OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
+        List<OrderDetailResponse> orderDetailResponses = order.getOrderDetails().stream()
+                .map(orderDetail -> {
+                    OrderDetailResponse res = modelMapper.map(orderDetail, OrderDetailResponse.class);
+                    res.setProductResponse(productMapping.mapProductToProductResponse(
+                            orderDetail.getProduct(),
+                            orderDetail.getProduct().getProductImages().stream()
+                                    .map(ProductImage::getImageUrl)
+                                    .toList()));
+                    return res;
+                })
+                .toList();
+
+        orderResponse.setOrderDetailResponses(orderDetailResponses);
+        return orderResponse;
+    }
+
+    private PageResponse<OrderResponse> getOrderResponsePageResponse(Page<Order> orders) {
+        List<OrderResponse> orderResponses =
+                orders.stream().map(this::mapOrderToOrderResponseWithDetails).toList();
+
+        return PageResponse.<OrderResponse>builder()
+                .contents(orderResponses)
+                .totalPages(orders.getTotalPages())
+                .totalElements(orders.getTotalElements())
+                .numberOfElements(orders.getNumberOfElements())
+                .build();
     }
 
     @Override
     public OrderResponse insertOrder(OrderDTO orderDTO) {
         User user = this.findUserById(orderDTO.getUserId());
 
-        modelMapper.typeMap(OrderDTO.class, Order.class)
-                .addMappings(mapper -> mapper.skip(Order::setId));
+        modelMapper.typeMap(OrderDTO.class, Order.class).addMappings(mapper -> mapper.skip(Order::setId));
         Order order = modelMapper.map(orderDTO, Order.class);
         order.setUser(user);
         order.setStatus(OrderStatus.PENDING);
@@ -108,19 +142,19 @@ public class OrderServiceImpl implements OrderService {
         return modelMapper.map(order, OrderResponse.class);
     }
 
-
     @Override
+    @Transactional
     public OrderResponse updateOrder(Long id, OrderDTO orderDTO) {
         Order order = this.findOrderById(id);
         User user = this.findUserById(orderDTO.getUserId());
-        modelMapper.typeMap(OrderDTO.class, Order.class)
-                .addMappings(mapper -> mapper.skip(Order::setId));
+        modelMapper.typeMap(OrderDTO.class, Order.class).addMappings(mapper -> mapper.skip(Order::setId));
         modelMapper.map(orderDTO, order);
         order.setUser(user);
         return modelMapper.map(orderRepository.save(order), OrderResponse.class);
     }
 
     @Override
+    @Transactional
     public void deleteOrderById(Long id) {
         Order order = this.findOrderById(id);
         order.setActive(false);
@@ -129,26 +163,23 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> getAllOrders() {
-        return orderRepository.findAll()
-                .stream().map(this::mapOrderToOrderResponse).toList();
+        return orderRepository.findAll().stream()
+                .map(this::mapOrderToOrderResponseWithDetails)
+                .toList();
     }
 
     @Override
     public OrderResponse getOrderById(Long id) {
         Order order = this.findOrderById(id);
-        OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
-        List<OrderDetailResponse> orderDetailResponses = order.getOrderDetails()
-                .stream().map(orderDetail ->
-                        modelMapper.map(orderDetail, OrderDetailResponse.class)).toList();
-        orderResponse.setOrderDetailResponses(orderDetailResponses);
-        return orderResponse;
+        return mapOrderToOrderResponseWithDetails(order);
     }
 
     @Override
     public List<OrderResponse> getOrdersByUserId(Long userId) {
         User user = this.findUserById(userId);
-        return orderRepository.findAllByUser(user)
-                .stream().map(this::mapOrderToOrderResponse).toList();
+        return orderRepository.findAllByUser(user).stream()
+                .map(this::mapOrderToOrderResponseWithDetails)
+                .toList();
     }
 
     @Override
@@ -160,9 +191,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public PageResponse<OrderResponse> findByUserIdAndKeyword(long userId, String keyword, Pageable pageable) {
         User user = this.findUserById(userId);
-        Page<Order> orders = orderRepository.findByUserIdAndKeyword(user.getId()
-                , keyword
-                , pageable);
+        Page<Order> orders = orderRepository.findByUserIdAndKeyword(user.getId(), keyword, pageable);
         return getOrderResponsePageResponse(orders);
     }
 
@@ -177,19 +206,7 @@ public class OrderServiceImpl implements OrderService {
                 pageOrderDTO.getKeyword(),
                 pageOrderDTO.getStartDate(),
                 pageOrderDTO.getEndDate(),
-                PageRequestUtil.getPageable(pageOrderDTO)
-        );
+                PageRequestUtil.getPageable(pageOrderDTO));
         return getOrderResponsePageResponse(orders);
-    }
-
-    private PageResponse<OrderResponse> getOrderResponsePageResponse(Page<Order> orders) {
-        List<OrderResponse> orderResponseList = orders
-                .stream().map(this::mapOrderToOrderResponse).toList();
-        return PageResponse.<OrderResponse>builder()
-                .contents(orderResponseList)
-                .numberOfElements(orders.getNumberOfElements())
-                .totalPages(orders.getTotalPages())
-                .totalElements(orders.getTotalElements())
-                .build();
     }
 }

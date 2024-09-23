@@ -1,5 +1,13 @@
 package com.example.shopappbackend.service.impl;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.shopappbackend.dto.ProductImageDTO;
 import com.example.shopappbackend.exception.NotFoundException;
 import com.example.shopappbackend.mapper.ProductImageMapping;
@@ -13,14 +21,8 @@ import com.example.shopappbackend.service.ProductService;
 import com.example.shopappbackend.utils.FileServiceUtil;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -32,17 +34,16 @@ public class ProductImageServiceImpl implements ProductImageService {
     private final ProductRepository productRepository;
 
     private Product findProductById(long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() ->
-                        new NotFoundException(localizationUtil
-                                .getLocaleResolver(MessageKey.NOT_FOUND,
-                                        " product id: " + id)));
+        return productRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException(
+                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " product id: " + id)));
     }
 
     @Override
     public List<ProductImageResponse> getAllProductImagesByProductId(long id) {
-        return productImageRepository.findAllByProductId(id)
-                .stream().map(ProductImageMapping::mapProductImageToProductImageResponse)
+        return productImageRepository.findAllByProductId(id).stream()
+                .map(ProductImageMapping::mapProductImageToProductImageResponse)
                 .collect(Collectors.toList());
     }
 
@@ -63,7 +64,8 @@ public class ProductImageServiceImpl implements ProductImageService {
                     throw new RuntimeException(e);
                 }
 
-                ProductImage productImage = productService.insertProductImage(productId,
+                ProductImage productImage = productService.insertProductImage(
+                        productId,
                         ProductImageDTO.builder()
                                 .productId(productId)
                                 .imageUrl(fileName)
@@ -79,4 +81,3 @@ public class ProductImageServiceImpl implements ProductImageService {
         return productImages;
     }
 }
-

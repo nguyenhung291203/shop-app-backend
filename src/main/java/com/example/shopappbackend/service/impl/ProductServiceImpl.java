@@ -1,5 +1,12 @@
 package com.example.shopappbackend.service.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.shopappbackend.dto.PageProductDTO;
 import com.example.shopappbackend.dto.ProductDTO;
 import com.example.shopappbackend.dto.ProductImageDTO;
@@ -20,14 +27,8 @@ import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
 import com.example.shopappbackend.utils.PageRequestUtil;
 import com.github.javafaker.Faker;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -40,30 +41,42 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapping productMapping;
 
     private Product findProductById(long id) {
-        return productRepository.findById(id).orElseThrow(() -> new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " product id: " + id)));
+        return productRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException(
+                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " product id: " + id)));
     }
 
     private Category findCategoryById(long id) {
-        return categoryRepository.findById(id).orElseThrow(() -> new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " category id: " + id)));
+        return categoryRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException(
+                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " category id: " + id)));
     }
 
     private ProductResponse mapProductToProductResponse(Product product) {
-        return productMapping.mapProductToProductResponse(product, this.productImageRepository.findAllByProductId(product.getId()).stream().map(ProductImage::getImageUrl).toList());
+        return productMapping.mapProductToProductResponse(
+                product,
+                this.productImageRepository.findAllByProductId(product.getId()).stream()
+                        .map(ProductImage::getImageUrl)
+                        .toList());
     }
 
     @Override
     public PageResponse<ProductResponse> getAllProducts(PageProductDTO pageProductDTO) {
         Page<Product> productPage = productRepository.findByKeywordAndCategory(
-                pageProductDTO.getKeyword().trim()
-                , pageProductDTO.getCategoryId()
-                , PageRequestUtil.getPageable(pageProductDTO));
-        List<ProductResponse> productResponses = productPage.getContent()
-                .stream().map(this::mapProductToProductResponse).collect(Collectors.toList());
+                pageProductDTO.getKeyword().trim(),
+                pageProductDTO.getCategoryId(),
+                PageRequestUtil.getPageable(pageProductDTO));
+        List<ProductResponse> productResponses = productPage.getContent().stream()
+                .map(this::mapProductToProductResponse)
+                .collect(Collectors.toList());
         return PageResponse.<ProductResponse>builder()
                 .contents(productResponses)
                 .numberOfElements(productPage.getNumberOfElements())
                 .totalPages(productPage.getTotalPages())
-                .totalElements(productPage.getTotalElements()).build();
+                .totalElements(productPage.getTotalElements())
+                .build();
     }
 
     @Override
@@ -74,7 +87,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getAllProductsByIds(List<Long> ids) {
-        List<Product> products =  productRepository.findAllById(ids);
+        List<Product> products = productRepository.findAllById(ids);
         return products.stream().map(this::mapProductToProductResponse).collect(Collectors.toList());
     }
 
@@ -127,7 +140,10 @@ public class ProductServiceImpl implements ProductService {
         List<ProductImage> productImages = productImageRepository.findAllByProductId(productId);
         if (productImages.size() >= 5)
             throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.EXCEED_QUANTITY));
-        ProductImage productImage = ProductImage.builder().imageUrl(productImageDTO.getImageUrl()).product(product).build();
+        ProductImage productImage = ProductImage.builder()
+                .imageUrl(productImageDTO.getImageUrl())
+                .product(product)
+                .build();
         return productImageRepository.save(productImage);
     }
 

@@ -1,16 +1,19 @@
 package com.example.shopappbackend.controller;
 
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
 import com.example.shopappbackend.dto.OrderDetailDTO;
 import com.example.shopappbackend.response.ResponseApi;
 import com.example.shopappbackend.service.OrderDetailService;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
-import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("${api.prefix}/order_details")
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrderDetailController {
     private final OrderDetailService orderDetailService;
     private final LocalizationUtil localizationUtil;
+
     @GetMapping("")
     public ResponseEntity<?> getOrderDetails() {
         return ResponseEntity.ok(ResponseApi.builder()
@@ -45,7 +49,8 @@ public class OrderDetailController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateOrderDetail(@Valid @PathVariable Long id, @Valid @RequestBody OrderDetailDTO orderDetailDTO) {
+    public ResponseEntity<?> updateOrderDetail(
+            @Valid @PathVariable Long id, @Valid @RequestBody OrderDetailDTO orderDetailDTO) {
         return ResponseEntity.ok(ResponseApi.builder()
                 .message(localizationUtil.getLocaleResolver(MessageKey.ORDER_DETAIL_UPDATE_SUCCESSFULLY))
                 .data(orderDetailService.updateOrderDetail(id, orderDetailDTO))

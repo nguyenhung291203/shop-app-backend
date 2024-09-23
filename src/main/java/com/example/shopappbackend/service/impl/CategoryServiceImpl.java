@@ -1,5 +1,11 @@
 package com.example.shopappbackend.service.impl;
 
+import java.lang.reflect.Type;
+import java.util.List;
+
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
 import com.example.shopappbackend.dto.CategoryDTO;
 import com.example.shopappbackend.exception.BadRequestException;
 import com.example.shopappbackend.exception.DataIntegrityViolationException;
@@ -11,12 +17,8 @@ import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Type;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -29,16 +31,18 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Category insertCategory(CategoryDTO category) throws BadRequestException {
         if (categoryRepository.existsByName(category.getName()))
-            throw new DataIntegrityViolationException(localizationUtil.getLocaleResolver(MessageKey.CATEGORY_ALREADY_EXIST));
+            throw new DataIntegrityViolationException(
+                    localizationUtil.getLocaleResolver(MessageKey.CATEGORY_ALREADY_EXIST));
         Category categoryNew = Category.builder().name(category.getName()).build();
         return this.categoryRepository.save(categoryNew);
     }
 
     @Override
     public Category getCategoryById(long id) {
-        return this.categoryRepository.findById(id)
-                .orElseThrow(() ->
-                        new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " category id:" + id)));
+        return this.categoryRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException(
+                        localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " category id:" + id)));
     }
 
     @Override
@@ -52,13 +56,10 @@ public class CategoryServiceImpl implements CategoryService {
             String data = gson.toJson(categories);
             redisTemplate.opsForValue().set(Category.CategoryRedis, data);
         } else {
-            Type listType = new TypeToken<List<Category>>() {
-            }.getType();
+            Type listType = new TypeToken<List<Category>>() {}.getType();
             categories = gson.fromJson(dataRedis, listType);
         }
         return categories;
-
-
     }
 
     @Override
@@ -73,7 +74,8 @@ public class CategoryServiceImpl implements CategoryService {
         if (this.categoryRepository.findAll().isEmpty())
             throw new BadRequestException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND));
         if (this.categoryRepository.findById(id).isEmpty())
-            throw new NotFoundException(localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " category id: " + id));
+            throw new NotFoundException(
+                    localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " category id: " + id));
         this.categoryRepository.deleteById(id);
     }
 }
