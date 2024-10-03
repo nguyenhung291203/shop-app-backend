@@ -97,7 +97,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return true;
             }
         }
-        System.out.println("Path: " + request.getServletPath() + ", Method: " + request.getMethod());
+
         return false;
     }
 }

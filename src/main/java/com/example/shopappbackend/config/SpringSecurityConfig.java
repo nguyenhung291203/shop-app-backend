@@ -43,12 +43,10 @@ public class SpringSecurityConfig implements WebMvcConfigurer {
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request.requestMatchers(
-                                HttpMethod.POST, String.format("%s/users/login", apiPrefix))
+                .authorizeHttpRequests(request ->
+                        request.requestMatchers(HttpMethod.POST, String.format("%s/users/login", apiPrefix))
                         .permitAll()
-                        //                        .requestMatchers(HttpMethod.POST, String.format("%s/users/register",
-                        // apiPrefix)).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/register")
+                        .requestMatchers(HttpMethod.POST, String.format("%s/users/register", apiPrefix))
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, String.format("%s/users/details/**", apiPrefix))
                         .hasAnyRole(Role.USER, Role.ADMIN)

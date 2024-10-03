@@ -1,7 +1,6 @@
 package com.example.shopappbackend.service.impl;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -54,7 +53,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     public List<OrderDetailResponse> getAllOrderDetails() {
         return this.orderDetailRepository.findAll().stream()
                 .map(orderDetail -> modelMapper.map(orderDetail, OrderDetailResponse.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -94,7 +93,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         Order order = this.findOrderById(orderId);
         return this.orderDetailRepository.findAllByOrder(order).stream()
                 .map(orderDetail -> modelMapper.map(orderDetail, OrderDetailResponse.class))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

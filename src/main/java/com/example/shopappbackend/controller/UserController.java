@@ -28,7 +28,7 @@ public class UserController {
     private final LocalizationUtil localizationUtil;
 
     @GetMapping
-    public ResponseEntity<?> getAllUsers() {
+    public ResponseEntity<ResponseApi> getAllUsers() {
         return ResponseEntity.ok(ResponseApi.builder()
                 .data(userService.getAllUsers())
                 .message("Get success")
@@ -36,14 +36,14 @@ public class UserController {
     }
 
     @GetMapping("/details")
-    public ResponseEntity<?> getUserDetail(@RequestHeader("Authorization") String jwtToken) {
+    public ResponseEntity<ResponseApi> getUserDetail(@RequestHeader("Authorization") String jwtToken) {
         String token = jwtToken.substring(7);
         return ResponseEntity.ok(
                 ResponseApi.builder().data(userService.getUserDetail(token)).build());
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody UserRegisterDTO userDTO) {
+    public ResponseEntity<ResponseApi> register(@Valid @RequestBody UserRegisterDTO userDTO) {
         log.info("Register user: {}", userDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseApi.builder()
@@ -53,7 +53,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody UserLoginDTO userLoginDTO) {
+    public ResponseEntity<ResponseApi> login(@Valid @RequestBody UserLoginDTO userLoginDTO) {
         return ResponseEntity.ok(ResponseApi.builder()
                 .data(userService.login(userLoginDTO))
                 .message(localizationUtil.getLocaleResolver(MessageKey.LOGIN_SUCCESSFULLY))
@@ -61,7 +61,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable @Valid Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
+    public ResponseEntity<ResponseApi> updateUser(@PathVariable @Valid Long id, @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
         return ResponseEntity.ok(ResponseApi.builder()
                 .data(userService.updateUser(id, userUpdateDTO))
                 .message("Cập nhật thành công")

@@ -6,6 +6,9 @@ import com.example.shopappbackend.model.OrderDetail;
 import com.example.shopappbackend.model.Product;
 
 public class OrderDetailMapping {
+    private OrderDetailMapping() {
+        throw new IllegalStateException("Utility class");
+    }
     public static OrderDetail mapOrderDetailDTOToOrderDetail(
             OrderDetailDTO orderDetailDTO, Product product, Order order) {
         return OrderDetail.builder()

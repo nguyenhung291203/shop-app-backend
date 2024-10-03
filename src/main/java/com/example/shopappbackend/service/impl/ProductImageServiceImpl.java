@@ -3,7 +3,6 @@ package com.example.shopappbackend.service.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,7 +43,7 @@ public class ProductImageServiceImpl implements ProductImageService {
     public List<ProductImageResponse> getAllProductImagesByProductId(long id) {
         return productImageRepository.findAllByProductId(id).stream()
                 .map(ProductImageMapping::mapProductImageToProductImageResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

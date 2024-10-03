@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileServiceUtil {
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    private static final long MAX_FILE_SIZE = 10L * 1024 * 1024;
     private static final String UPLOAD_DIR = "uploads";
 
     public String validateFile(MultipartFile file) {

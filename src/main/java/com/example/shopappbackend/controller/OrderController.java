@@ -1,16 +1,5 @@
 package com.example.shopappbackend.controller;
 
-import java.util.Map;
-
-import jakarta.validation.Valid;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import com.example.shopappbackend.dto.OrderDTO;
 import com.example.shopappbackend.dto.PageOrderDTO;
 import com.example.shopappbackend.response.ResponseApi;
@@ -18,8 +7,16 @@ import com.example.shopappbackend.service.OrderService;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
 import com.example.shopappbackend.utils.ParamUtil;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("${api.prefix}/orders")
@@ -30,7 +27,7 @@ public class OrderController {
     private final LocalizationUtil localizationUtil;
 
     @GetMapping
-    public ResponseEntity<?> getAllOrders() {
+    public ResponseEntity<ResponseApi> getAllOrders() {
         return new ResponseEntity<>(
                 ResponseApi.builder()
                         .message(localizationUtil.getLocaleResolver(MessageKey.ORDER_GET_SUCCESSFULLY))
@@ -40,7 +37,7 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getOrderById(@Valid @PathVariable long id) {
+    public ResponseEntity<ResponseApi> getOrderById(@Valid @PathVariable long id) {
         return new ResponseEntity<>(
                 ResponseApi.builder()
                         .data(orderService.getOrderById(id))
@@ -50,8 +47,7 @@ public class OrderController {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> insertOrder(@Valid @RequestBody OrderDTO orderDTO) {
+    public ResponseEntity<ResponseApi> insertOrder(@Valid @RequestBody OrderDTO orderDTO) {
         return new ResponseEntity<>(
                 ResponseApi.builder()
                         .data(orderService.insertOrder(orderDTO))
@@ -61,7 +57,7 @@ public class OrderController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateOrder(@Valid @PathVariable Long id, @Valid @RequestBody OrderDTO orderDTO) {
+    public ResponseEntity<ResponseApi> updateOrder(@Valid @PathVariable Long id, @Valid @RequestBody OrderDTO orderDTO) {
         return new ResponseEntity<>(
                 ResponseApi.builder()
                         .message(localizationUtil.getLocaleResolver(MessageKey.ORDER_UPDATE_SUCCESSFULLY))
@@ -71,7 +67,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteOrderById(@Valid @PathVariable Long id) {
+    public ResponseEntity<ResponseApi> deleteOrderById(@Valid @PathVariable Long id) {
         orderService.deleteOrderById(id);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
@@ -83,7 +79,7 @@ public class OrderController {
 
     @GetMapping("/users/{userId}")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<?> getOrdersByOrderId(@Valid @PathVariable Long userId) {
+    public ResponseEntity<ResponseApi> getOrdersByOrderId(@Valid @PathVariable Long userId) {
         return new ResponseEntity<>(
                 ResponseApi.builder()
                         .data(orderService.getOrdersByUserId(userId))
@@ -94,7 +90,7 @@ public class OrderController {
 
     @GetMapping("/search")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> findByKeyword(
+    public ResponseEntity<ResponseApi> findByKeyword(
             @Valid @RequestParam("keyword") String keyword, @Valid @RequestParam Map<String, Object> params) {
         Pageable pageable = ParamUtil.getPageable(params);
         return new ResponseEntity<>(
@@ -106,7 +102,7 @@ public class OrderController {
     }
 
     @PostMapping("/users/{userId}/search")
-    public ResponseEntity<?> findByUserIdAndKeyword(
+    public ResponseEntity<ResponseApi> findByUserIdAndKeyword(
             @Valid @PathVariable Long userId, @Valid @RequestBody PageOrderDTO pageOrderDTO) {
         pageOrderDTO.setUserId(userId);
         return new ResponseEntity<>(
@@ -118,7 +114,7 @@ public class OrderController {
 
     @PostMapping("/search")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
-    public ResponseEntity<?> findAllOrders(@Valid @RequestBody PageOrderDTO pageOrderDTO) {
+    public ResponseEntity<ResponseApi> findAllOrders(@Valid @RequestBody PageOrderDTO pageOrderDTO) {
         return new ResponseEntity<>(
                 ResponseApi.builder()
                         .data(orderService.findAllOrders(pageOrderDTO))

@@ -1,12 +1,5 @@
 package com.example.shopappbackend.service.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.example.shopappbackend.dto.PageProductDTO;
 import com.example.shopappbackend.dto.ProductDTO;
 import com.example.shopappbackend.dto.ProductImageDTO;
@@ -27,8 +20,12 @@ import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
 import com.example.shopappbackend.utils.PageRequestUtil;
 import com.github.javafaker.Faker;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +67,7 @@ public class ProductServiceImpl implements ProductService {
                 PageRequestUtil.getPageable(pageProductDTO));
         List<ProductResponse> productResponses = productPage.getContent().stream()
                 .map(this::mapProductToProductResponse)
-                .collect(Collectors.toList());
+                .toList();
         return PageResponse.<ProductResponse>builder()
                 .contents(productResponses)
                 .numberOfElements(productPage.getNumberOfElements())
@@ -88,7 +85,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductResponse> getAllProductsByIds(List<Long> ids) {
         List<Product> products = productRepository.findAllById(ids);
-        return products.stream().map(this::mapProductToProductResponse).collect(Collectors.toList());
+        return products.stream().map(this::mapProductToProductResponse).toList();
     }
 
     @Override
@@ -117,10 +114,18 @@ public class ProductServiceImpl implements ProductService {
         Product product = this.findProductById(id);
         Category category = this.findCategoryById(productDTO.getCategoryId());
         product.setCategory(category);
-        product.setDescription(productDTO.getDescription());
-        product.setThumbnail(productDTO.getThumbnail());
-        product.setPrice(productDTO.getPrice());
-        product.setName(productDTO.getName());
+        if (productDTO.getDescription() != null) {
+            product.setDescription(productDTO.getDescription());
+        }
+        if (productDTO.getThumbnail() != null) {
+            product.setThumbnail(productDTO.getThumbnail());
+        }
+        if (productDTO.getPrice() > 0) {
+            product.setPrice(productDTO.getPrice());
+        }
+        if (productDTO.getName() != null) {
+            product.setName(productDTO.getName());
+        }
         return this.mapProductToProductResponse(productRepository.save(product));
     }
 

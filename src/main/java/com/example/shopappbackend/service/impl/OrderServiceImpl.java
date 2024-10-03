@@ -64,14 +64,6 @@ public class OrderServiceImpl implements OrderService {
                         localizationUtil.getLocaleResolver(MessageKey.NOT_FOUND, " product id: " + id)));
     }
 
-    private OrderResponse mapOrderToOrderResponse(Order order) {
-        OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
-        List<OrderDetailResponse> orderDetailResponses = order.getOrderDetails().stream()
-                .map(orderDetail -> modelMapper.map(orderDetail, OrderDetailResponse.class))
-                .toList();
-        orderResponse.setOrderDetailResponses(orderDetailResponses);
-        return orderResponse;
-    }
 
     private OrderResponse mapOrderToOrderResponseWithDetails(Order order) {
         OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
@@ -112,7 +104,6 @@ public class OrderServiceImpl implements OrderService {
         order.setUser(user);
         order.setStatus(OrderStatus.PENDING);
         order.setOrderDate(new Date());
-
         Date shippingDate = orderDTO.getShippingDate();
         if (shippingDate == null) {
             shippingDate = new Date();

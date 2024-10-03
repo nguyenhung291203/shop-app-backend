@@ -29,7 +29,7 @@ public class CategoryController {
     private final LocalizationUtil localizationUtil;
 
     @GetMapping("")
-    public ResponseEntity<?> getAllCategories(@RequestParam Map<String, Object> params) {
+    public ResponseEntity<ResponseApi> getAllCategories(@RequestParam Map<String, Object> params) {
         List<Category> categories = categoryService.getAllCategories();
         return ResponseEntity.ok(ResponseApi.builder()
                 .data(categories)
@@ -38,7 +38,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getCategoryById(@Valid @PathVariable Long id) {
+    public ResponseEntity<ResponseApi> getCategoryById(@Valid @PathVariable Long id) {
         return ResponseEntity.ok(ResponseApi.builder()
                 .message(localizationUtil.getLocaleResolver(MessageKey.CATEGORY_GET_SUCCESSFULLY, " id: " + id))
                 .data(categoryService.getCategoryById(id))
@@ -46,7 +46,7 @@ public class CategoryController {
     }
 
     @PostMapping("")
-    public ResponseEntity<?> insertCategory(@Valid @RequestBody CategoryDTO categoryDTO) throws BadRequestException {
+    public ResponseEntity<ResponseApi> insertCategory(@Valid @RequestBody CategoryDTO categoryDTO) throws BadRequestException {
         return new ResponseEntity<>(
                 ResponseApi.builder()
                         .data(categoryService.insertCategory(categoryDTO))
@@ -56,7 +56,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateCategory(@Valid @PathVariable Long id, @Valid @RequestBody CategoryDTO categoryDTO) {
+    public ResponseEntity<ResponseApi> updateCategory(@Valid @PathVariable Long id, @Valid @RequestBody CategoryDTO categoryDTO) {
         return ResponseEntity.ok(ResponseApi.builder()
                 .message(localizationUtil.getLocaleResolver(MessageKey.CATEGORY_UPDATE_SUCCESSFULLY))
                 .data(categoryService.updateCategory(id, categoryDTO))
@@ -64,7 +64,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCategory(@Valid @PathVariable Long id) {
+    public ResponseEntity<ResponseApi> deleteCategory(@Valid @PathVariable Long id) {
         categoryService.deleteCategory(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(ResponseApi.builder()

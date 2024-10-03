@@ -24,7 +24,6 @@ import com.example.shopappbackend.response.ResponseApi;
 import com.example.shopappbackend.service.ProductImageService;
 import com.example.shopappbackend.service.ProductRedisService;
 import com.example.shopappbackend.service.ProductService;
-import com.example.shopappbackend.utils.FileServiceUtil;
 import com.example.shopappbackend.utils.LocalizationUtil;
 import com.example.shopappbackend.utils.MessageKey;
 
@@ -37,13 +36,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
-    private final FileServiceUtil fileServiceUtil;
     private final LocalizationUtil localizationUtil;
     private final ProductRedisService productRedisService;
     private final ProductImageService productImageService;
 
     @PostMapping("/search")
-    public ResponseEntity<?> getAllProducts(@Valid @RequestBody PageProductDTO pageProductDTO) {
+    public ResponseEntity<ResponseApi> getAllProducts(@Valid @RequestBody PageProductDTO pageProductDTO) {
         PageResponse<ProductResponse> response = productRedisService.getAllProducts(pageProductDTO);
         if (response == null) {
             response = productService.getAllProducts(pageProductDTO);
@@ -57,7 +55,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getProductById(@Valid @PathVariable Long id) {
+    public ResponseEntity<ResponseApi> getProductById(@Valid @PathVariable Long id) {
         return ResponseEntity.ok(ResponseApi.builder()
                 .data(productService.getProductById(id))
                 .message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_GET_SUCCESSFULLY))
@@ -65,7 +63,7 @@ public class ProductController {
     }
 
     @GetMapping("/by-ids")
-    public ResponseEntity<?> getAllProductsByIds(@RequestParam @Valid List<Long> ids) {
+    public ResponseEntity<ResponseApi> getAllProductsByIds(@RequestParam @Valid List<Long> ids) {
         return ResponseEntity.ok(ResponseApi.builder()
                 .message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_GET_SUCCESSFULLY))
                 .data(productService.getAllProductsByIds(ids))
@@ -73,7 +71,7 @@ public class ProductController {
     }
 
     @PostMapping("")
-    public ResponseEntity<?> insertProduct(@Valid @RequestBody ProductDTO productDTO) {
+    public ResponseEntity<ResponseApi> insertProduct(@Valid @RequestBody ProductDTO productDTO) {
         return new ResponseEntity<>(
                 ResponseApi.builder()
                         .message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_INSERT_SUCCESSFULLY))
@@ -83,7 +81,7 @@ public class ProductController {
     }
 
     @PostMapping(value = "/{id}/upload-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> insertProductImage(
+    public ResponseEntity<ResponseApi> insertProductImage(
             @Valid @PathVariable Long id, @RequestParam("files") List<MultipartFile> files) {
         try {
             List<ProductImage> productImages = productImageService.uploadProductImages(id, files);
@@ -94,12 +92,13 @@ public class ProductController {
                             .build(),
                     HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ResponseApi.builder().message(e.getMessage()).build());
         }
     }
 
     @GetMapping("/images/{imageName}")
-    public ResponseEntity<?> viewImage(@PathVariable String imageName) {
+    public ResponseEntity<UrlResource> viewImage(@PathVariable String imageName) {
         try {
             Path imagePath = Paths.get("uploads/" + imageName);
             UrlResource resource = new UrlResource(imagePath.toUri());
@@ -112,7 +111,8 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@Valid @PathVariable long id, @Valid @RequestBody ProductDTO productDTO) {
+    public ResponseEntity<ResponseApi> updateProduct(
+            @Valid @PathVariable long id, @Valid @RequestBody ProductDTO productDTO) {
         return ResponseEntity.ok(ResponseApi.builder()
                 .message(localizationUtil.getLocaleResolver(MessageKey.PRODUCT_UPDATE_SUCCESSFULLY))
                 .data(productService.updateProduct(id, productDTO))
@@ -120,7 +120,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProductById(@Valid @PathVariable long id) {
+    public ResponseEntity<ResponseApi> deleteProductById(@Valid @PathVariable long id) {
         productService.deleteProductById(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(ResponseApi.builder()
@@ -130,7 +130,7 @@ public class ProductController {
     }
 
     @PostMapping("/generateFakeProducts")
-    public ResponseEntity<?> generateFakeProducts() {
+    public ResponseEntity<String> generateFakeProducts() {
         productService.generateFakeProducts();
         return ResponseEntity.ok("Success");
     }

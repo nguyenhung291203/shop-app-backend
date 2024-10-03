@@ -22,7 +22,7 @@ public class ProductImageController {
     private final ProductImageService productImageService;
 
     @GetMapping("/products/{productId}")
-    public ResponseEntity<?> getAllProductImagesByProductId(@PathVariable @Valid long productId) {
+    public ResponseEntity<ResponseApi> getAllProductImagesByProductId(@PathVariable @Valid long productId) {
         return ResponseEntity.ok(ResponseApi.builder()
                 .data(productImageService.getAllProductImagesByProductId(productId))
                 .message("")

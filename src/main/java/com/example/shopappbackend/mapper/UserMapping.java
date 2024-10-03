@@ -5,6 +5,10 @@ import com.example.shopappbackend.model.User;
 import com.example.shopappbackend.response.UserResponse;
 
 public class UserMapping {
+    private UserMapping() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static User mapUserRegisterDTOtoUser(UserRegisterDTO userRegisterDTO) {
         return User.builder()
                 .dateOfBirth(userRegisterDTO.getDateOfBirth())

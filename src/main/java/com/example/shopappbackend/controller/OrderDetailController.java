@@ -24,7 +24,7 @@ public class OrderDetailController {
     private final LocalizationUtil localizationUtil;
 
     @GetMapping("")
-    public ResponseEntity<?> getOrderDetails() {
+    public ResponseEntity<ResponseApi> getOrderDetails() {
         return ResponseEntity.ok(ResponseApi.builder()
                 .data(orderDetailService.getAllOrderDetails())
                 .message(localizationUtil.getLocaleResolver(MessageKey.ORDER_DETAIL_GET_SUCCESSFULLY))
@@ -32,7 +32,7 @@ public class OrderDetailController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getOrderDetailById(@Valid @PathVariable Long id) {
+    public ResponseEntity<ResponseApi> getOrderDetailById(@Valid @PathVariable Long id) {
         return ResponseEntity.ok(ResponseApi.builder()
                 .data(orderDetailService.getOrderDetailById(id))
                 .message(localizationUtil.getLocaleResolver(MessageKey.ORDER_DETAIL_GET_SUCCESSFULLY))
@@ -40,7 +40,7 @@ public class OrderDetailController {
     }
 
     @PostMapping("")
-    public ResponseEntity<?> insertOrderDetail(@Valid @RequestBody OrderDetailDTO orderDetailDTO) {
+    public ResponseEntity<ResponseApi> insertOrderDetail(@Valid @RequestBody OrderDetailDTO orderDetailDTO) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ResponseApi.builder()
                         .data(orderDetailService.insertOrderDetail(orderDetailDTO))
@@ -49,7 +49,7 @@ public class OrderDetailController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateOrderDetail(
+    public ResponseEntity<ResponseApi> updateOrderDetail(
             @Valid @PathVariable Long id, @Valid @RequestBody OrderDetailDTO orderDetailDTO) {
         return ResponseEntity.ok(ResponseApi.builder()
                 .message(localizationUtil.getLocaleResolver(MessageKey.ORDER_DETAIL_UPDATE_SUCCESSFULLY))
@@ -58,7 +58,7 @@ public class OrderDetailController {
     }
 
     @GetMapping("/orders/{orderId}")
-    public ResponseEntity<?> getOrderDetailByOrderId(@Valid @PathVariable Long orderId) {
+    public ResponseEntity<ResponseApi> getOrderDetailByOrderId(@Valid @PathVariable Long orderId) {
         return ResponseEntity.ok(ResponseApi.builder()
                 .message(localizationUtil.getLocaleResolver(MessageKey.ORDER_GET_SUCCESSFULLY))
                 .data(orderDetailService.getOrderDetailByOrderId(orderId))
@@ -66,7 +66,7 @@ public class OrderDetailController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteOrderDetail(@Valid @PathVariable Long id) {
+    public ResponseEntity<ResponseApi> deleteOrderDetail(@Valid @PathVariable Long id) {
         orderDetailService.deleteOrderDetailById(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(ResponseApi.builder()

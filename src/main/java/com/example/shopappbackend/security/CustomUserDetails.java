@@ -9,7 +9,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.example.shopappbackend.model.Role;
 import com.example.shopappbackend.model.User;
 
 import lombok.*;
@@ -29,12 +28,6 @@ public class CustomUserDetails implements UserDetails {
     private Long facebookAccountId;
     private Long googleAccountId;
     private Collection<? extends GrantedAuthority> authorities;
-
-    public void setAuthorities(Role role) {
-        List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
-        authorityList.add(new SimpleGrantedAuthority(role.getName()));
-        this.authorities = authorityList;
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

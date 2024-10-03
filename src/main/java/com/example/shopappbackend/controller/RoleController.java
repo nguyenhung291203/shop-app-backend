@@ -24,7 +24,7 @@ public class RoleController {
     private final LocalizationUtil localizationUtil;
 
     @GetMapping()
-    public ResponseEntity<?> getAllRoles() {
+    public ResponseEntity<ResponseApi> getAllRoles() {
         return ResponseEntity.ok(ResponseApi.builder()
                 .data(roleService.getAllRoles())
                 .message(localizationUtil.getLocaleResolver(MessageKey.ROLE_GET_SUCCESSFULLY))
@@ -32,7 +32,7 @@ public class RoleController {
     }
 
     @PostMapping()
-    public ResponseEntity<?> insertRole(@Valid @RequestBody RoleDTO roleDTO) {
+    public ResponseEntity<ResponseApi> insertRole(@Valid @RequestBody RoleDTO roleDTO) {
         return new ResponseEntity<>(
                 ResponseApi.builder()
                         .message(localizationUtil.getLocaleResolver(MessageKey.ROLE_INSERT_SUCCESSFULLY))
@@ -42,7 +42,7 @@ public class RoleController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteRoleById(@Valid @PathVariable Long id) {
+    public ResponseEntity<ResponseApi> deleteRoleById(@Valid @PathVariable Long id) {
         this.roleService.deleteRoleById(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(ResponseApi.builder()
@@ -52,7 +52,7 @@ public class RoleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateRoleById(@Valid @PathVariable Long id, @RequestBody RoleDTO roleDTO) {
+    public ResponseEntity<ResponseApi> updateRoleById(@Valid @PathVariable Long id, @RequestBody RoleDTO roleDTO) {
         return new ResponseEntity<>(
                 ResponseApi.builder()
                         .data(roleService.updateRole(id, roleDTO))
